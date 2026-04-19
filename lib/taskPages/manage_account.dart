@@ -23,7 +23,7 @@ class ManageAccountPage extends StatelessWidget {
           icon: Icon(
             Icons.arrow_back,
             size: height * 0.04,
-            color: Colors.black,
+            color: const Color(0xFF000000),
           ),
         ),
         toolbarHeight: height * 0.05,
@@ -31,31 +31,15 @@ class ManageAccountPage extends StatelessWidget {
         title: globalText('Manage Account', 18, FontWeight.w600),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 08),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           crossAxisAlignment: .center,
           // mainAxisAlignment: .center,
           children: [
-            const SizedBox(height: 80),
+            const SizedBox(height: 40),
             ClipOval(
               child: Image.asset('images/boy.png', height: height * 0.12),
-            ),
-            // const SizedBox(width: 20),
-            // Align(
-            //   alignment: Alignment.centerRight,
-            //   child: ElevatedButton(
-            //     onPressed: () {
-            //       showModalBottomSheet(
-            //         context: context,
-            //         builder: (_) {
-            //           return imageModalBottomSheet(width, height);
-            //         },
-            //       );
-            //     },
-            //     style: changeButtonStyle(width, height),
-            //     child: globalText('Change', 11, FontWeight.w600),
-            //   ),
-            // ),
+            ),                       
             const SizedBox(height: 40),
             ListTile(
               visualDensity: VisualDensity(vertical: -4),

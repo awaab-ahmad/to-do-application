@@ -54,7 +54,7 @@ class _FrontPageState extends State<FrontPage> {
         ),
         leading: Builder(
           builder: (context) => IconButton(
-            padding: const EdgeInsets.all(0),
+            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
@@ -64,300 +64,262 @@ class _FrontPageState extends State<FrontPage> {
         title: globalText('Dashboard', 18, FontWeight.w600),
         centerTitle: true,
       ),
-      body: ListView(
-        physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 05),
-            child: Column(
-              crossAxisAlignment: .start,
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 12),
+        child: ListView(
+          physics: BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          children: [
+            const SizedBox(height: 10),
+            globalText('Create Your Tasks', 18, FontWeight.w600),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => TaskCreationPage()),
+                );
+              },
+              style: addingTaskButtonStyle(Color(0xFFF2BB6C), width, height),
+              child: Column(
+                children: [
+                  ClipOval(
+                    child: Image.asset('images/add.png', height: height * 0.05),
+                  ),
+                  const Expanded(child: SizedBox()),
+                  globalText('Add a New Task', 14, FontWeight.w600),
+                ],
+              ),
+            ),
+            globalText('Categories:', 18, FontWeight.w600),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const SizedBox(height: 10),
-                globalText('Create Your Tasks', 18, FontWeight.w600),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => TaskCreationPage(),
+                        builder: (_) => ModelStatusClass(
+                          appBarTitle: 'Pending',
+                          taskTypeTitle: 'Pending Tasks',
+                        ),
                       ),
                     );
                   },
-                  style: addingTaskButtonStyle(
-                    Color(0xFFF2BB6C),
+                  style: categoriesButtonStyle(
                     width,
                     height,
+                    Theme.of(context).colorScheme.primary,
                   ),
-                  child: Column(
-                    children: [
-                      ClipOval(
-                        child: Image.asset(
-                          'images/add.png',
-                          height: height * 0.05,
-                        ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      globalText('Add a New Task', 14, FontWeight.w600),
-                    ],
-                  ),
-                ),
-                globalText('Categories:', 18, FontWeight.w600),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ModelStatusClass(
-                              appBarTitle: 'Pending',
-                              taskTypeTitle: 'Pending Tasks',
-                            ),
-                          ),
-                        );
-                      },
-                      style: categoriesButtonStyle(
-                        width,
-                        height,
-                        Theme.of(context).colorScheme.primary,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: .start,
-                        children: [
-                          globalText('Pending', 15, FontWeight.w600),
-                          const Expanded(child: SizedBox()),
-                          globalText(
-                            'Tasks: ${context.watch<StateManagementProvider>().pendingTasks}',
-                            14,
-                            FontWeight.w600,
-                          ),
-                          const SizedBox(height: 02),
-                        ],
-                      ),
-                    ),
-                    const Expanded(child: SizedBox()),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ModelStatusClass(
-                              appBarTitle: 'Completed',
-                              taskTypeTitle: 'Completed Tasks',
-                            ),
-                          ),
-                        );
-                      },
-                      style: categoriesButtonStyle(
-                        width,
-                        height,
-                        Theme.of(context).colorScheme.secondary,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: .start,
-                        children: [
-                          globalText('Completed', 15, FontWeight.w600),
-                          const Expanded(child: SizedBox()),
-                          globalText(
-                            'Tasks: ${context.watch<StateManagementProvider>().completedTasks}',
-                            14,
-                            FontWeight.w600,
-                          ),
-                          const SizedBox(height: 02),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 06),
-                ElevatedButton(
-                  onPressed: () async {
-                    showModalBottomSheet(
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      backgroundColor: const Color(0x00000000),
-                      context: context,
-                      builder: (context) {
-                        return Padding(
-                          padding: EdgeInsets.only(
-                            bottom: MediaQuery.of(context).viewInsets.bottom,
-                          ),
-                          child: categoryCreatingBottomSheet(
-                            width,
-                            height,
-                            context,
-                            categoryController,
-                            () => context
-                                .read<StateManagementProvider>()
-                                .categoryCreation(categoryController),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    alignment: Alignment.centerLeft,
-                    overlayColor: const Color(0xFF000000),
-                    backgroundColor: const Color(0xFF86B2C5),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    side: BorderSide(
-                      width: 1.5,
-                      color: const Color(0xFF000000),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 08,
-                      horizontal: 15,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: .start,
-                    children: [
-                      SizedBox(
-                        width: width * 0.65,
-                        child: FittedBox(
-                          child: globalText(
-                            'Create your own category',
-                            14,
-                            FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: SizedBox()),
-                      Image.asset('images/list.png', height: height * 0.04),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          StreamBuilder(
-            stream: myCategoriesStream,
-            builder: (context, snaps) {
-              if (snaps.connectionState == ConnectionState.waiting) {
-                return Center(child: globalProgressIndicator());
-              } else if (!snaps.hasData || snaps.data!.docs.isEmpty) {
-                return SizedBox.shrink();
-              }
-              final data = snaps.data!.docs;
-              return SizedBox(
-                height: height * 0.10,
-                width: width * 1.0,
-                child: Card(
-                  margin: const EdgeInsets.all(0),
-                  elevation: 0,
-                  color: const Color(0xFFFFF9F0),
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 5),
-                        child: globalText('My Categories', 18, FontWeight.w600),
+                      globalText('Pending', 15, FontWeight.w600),
+                      const Expanded(child: SizedBox()),
+                      globalText(
+                        'Tasks: ${context.watch<StateManagementProvider>().pendingTasks}',
+                        14,
+                        FontWeight.w600,
                       ),
-                      Expanded(
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: data.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 03,
-                              ),
-                              child: ElevatedButton(
-                                onLongPress: () {
-                                  if (kDebugMode) print(data[index].id);
-                                  showDialog(
-                                    context: context,
-                                    builder: (alertContext) =>
-                                        ModelAlertDialogs(
-                                          alertDialogContext: alertContext,
-                                          title:
-                                              'Want to remove this Category?',
-                                          firstElevatedButtonTitle: 'No',
-                                          secondElevatedButtonTitle: 'Yes',
-                                          firstElevatedButtonFunc: () =>
-                                              Navigator.of(context).pop(),
-                                          secondElevatedButtonFunc: () async {
-                                            await context
-                                                .read<StateManagementProvider>()
-                                                .categoryDeletion(
-                                                  data[index].id,
-                                                );
-                                          },
-                                        ),
-                                  );
-                                },
-                                onPressed: () {
-                                  if (kDebugMode) {
-                                    print(
-                                      'The Name of this Page is: ${data[index]['Category Name']}',
-                                    );
-                                  }
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ModelCategoryClass(
-                                        appBarTitle:
-                                            data[index]['Category Name'],
-                                        taskTypeTitle:
-                                            '${data[index]['Category Name']} Tasks',
-                                      ),
-                                    ),
-                                  );
-                                },
-                                style: myCategoriesStyle(width, height),
-                                child: globalText(
-                                  data[index]['Category Name'],
-                                  15,
-                                  FontWeight.w600,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                      const SizedBox(height: 02),
                     ],
                   ),
                 ),
-              );
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 05),
-            child: Column(
-              children: [
-                const SizedBox(height: 03),
-                Row(
-                  children: [
-                    globalText('Recently Deleted', 18, FontWeight.w600),
-                    const SizedBox(width: 05),
-                    globalText('', 12, FontWeight.w600),
-                  ],
-                ),
+                const Expanded(child: SizedBox()),
                 ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ModelStatusClass(
-                        appBarTitle: 'Deleted',
-                        taskTypeTitle: 'Deleted Tasks',
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ModelStatusClass(
+                          appBarTitle: 'Completed',
+                          taskTypeTitle: 'Completed Tasks',
+                        ),
                       ),
-                    ),
-                  ),
-                  style: addingTaskButtonStyle(
-                    const Color(0xFFAEAEAE),
+                    );
+                  },
+                  style: categoriesButtonStyle(
                     width,
                     height,
+                    Theme.of(context).colorScheme.secondary,
                   ),
                   child: Column(
+                    crossAxisAlignment: .start,
                     children: [
-                      Image.asset('images/delete.png', height: height * 0.05),
+                      globalText('Completed', 15, FontWeight.w600),
                       const Expanded(child: SizedBox()),
-                      globalText('Deleted Tasks', 14, FontWeight.w600),
+                      globalText(
+                        'Tasks: ${context.watch<StateManagementProvider>().completedTasks}',
+                        14,
+                        FontWeight.w600,
+                      ),
+                      const SizedBox(height: 02),
                     ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 06),
+            ElevatedButton(
+              onPressed: () async {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  backgroundColor: const Color(0x00000000),
+                  context: context,
+                  builder: (context) {
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: categoryCreatingBottomSheet(
+                        width,
+                        height,
+                        context,
+                        categoryController,
+                        () => context
+                            .read<StateManagementProvider>()
+                            .categoryCreation(categoryController),
+                      ),
+                    );
+                  },
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                overlayColor: const Color(0xFF000000),
+                backgroundColor: const Color(0xFF86B2C5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                side: BorderSide(width: 1.5, color: const Color(0xFF000000)),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 08,
+                  horizontal: 15,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: .start,
+                children: [
+                  SizedBox(
+                    width: width * 0.65,
+                    child: FittedBox(
+                      child: globalText(
+                        'Create your own category',
+                        14,
+                        FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: SizedBox()),
+                  Image.asset('images/list.png', height: height * 0.04),
+                ],
+              ),
+            ),
+            globalText('My Categories', 18, FontWeight.w600),
+            StreamBuilder(
+              stream: myCategoriesStream,
+              builder: (context, snaps) {
+                if (snaps.connectionState == ConnectionState.waiting) {
+                  return Center(child: globalProgressIndicator());
+                } else if (!snaps.hasData || snaps.data!.docs.isEmpty) {
+                  return SizedBox.shrink();
+                }
+                final data = snaps.data!.docs;
+                return SizedBox(
+                  height: height * 0.06,
+                  width: width * 1.0,
+                  child: Card(
+                    margin: const EdgeInsets.all(0),
+                    color: const Color(0x00000000),
+                    shadowColor: const Color(0x00000000),
+                    clipBehavior: .antiAlias,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 03),
+                          child: ElevatedButton(
+                            onLongPress: () {
+                              if (kDebugMode) print(data[index].id);
+                              showDialog(
+                                context: context,
+                                builder: (alertContext) => ModelAlertDialogs(
+                                  alertDialogContext: alertContext,
+                                  title: 'Want to remove this Category?',
+                                  firstElevatedButtonTitle: 'No',
+                                  secondElevatedButtonTitle: 'Yes',
+                                  firstElevatedButtonFunc: () =>
+                                      Navigator.of(context).pop(),
+                                  secondElevatedButtonFunc: () async {
+                                    await context
+                                        .read<StateManagementProvider>()
+                                        .categoryDeletion(data[index].id);
+                                  },
+                                ),
+                              );
+                            },
+                            onPressed: () {
+                              if (kDebugMode) {
+                                print(
+                                  'The Name of this Page is: ${data[index]['Category Name']}',
+                                );
+                              }
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ModelCategoryClass(
+                                    appBarTitle: data[index]['Category Name'],
+                                    taskTypeTitle:
+                                        '${data[index]['Category Name']} Tasks',
+                                  ),
+                                ),
+                              );
+                            },
+                            style: myCategoriesStyle(width, height),
+                            child: globalText(
+                              data[index]['Category Name'],
+                              15,
+                              FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 03),
+            Row(
+              children: [
+                globalText('Recently Deleted', 18, FontWeight.w600),
+                const SizedBox(width: 05),
+                globalText('', 12, FontWeight.w600),
+              ],
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ModelStatusClass(
+                    appBarTitle: 'Deleted',
+                    taskTypeTitle: 'Deleted Tasks',
+                  ),
+                ),
+              ),
+              style: addingTaskButtonStyle(
+                const Color(0xFFAEAEAE),
+                width,
+                height,
+              ),
+              child: Column(
+                children: [
+                  Image.asset('images/delete.png', height: height * 0.05),
+                  const Expanded(child: SizedBox()),
+                  globalText('Deleted Tasks', 14, FontWeight.w600),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -392,7 +354,7 @@ class _FrontPageState extends State<FrontPage> {
       padding: EdgeInsets.symmetric(horizontal: 08, vertical: 04),
       alignment: Alignment.centerLeft,
       overlayColor: const Color(0xFF000000),
-      fixedSize: Size(width * 0.47, height * 0.1),
+      fixedSize: Size(width * 0.45, height * 0.1),
       backgroundColor: c,
       side: BorderSide(color: Colors.black, width: 1.4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),

@@ -152,7 +152,7 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
           const Expanded(child: SizedBox()),
           Align(
             alignment: Alignment.centerLeft,
-            child: globalText('App Version: 2.3.3', 12, FontWeight.w600),
+            child: globalText('App Version: 2.3.4', 12, FontWeight.w600),
           ),
           const SizedBox(height: 10),
         ],

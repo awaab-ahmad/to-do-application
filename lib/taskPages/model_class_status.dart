@@ -70,7 +70,7 @@ class _ModelClassState extends State<ModelStatusClass> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 08, vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         child: Column(
           children: [
             Row(

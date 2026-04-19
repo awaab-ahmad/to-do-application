@@ -78,11 +78,10 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
           ),
         ),
         body: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 08),
+          padding: EdgeInsets.symmetric(horizontal: 12),
           child: Column(
             crossAxisAlignment: .start,
             children: [
-              globalText('Title', 15, FontWeight.w600),
               const SizedBox(height: 05),
               TextField(
                 controller: titleController,
@@ -101,7 +100,9 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     horizontal: 05,
                     vertical: 0,
                   ),
-                  hintText: 'Enter Title',
+                  labelText: 'Enter Title',
+                  labelStyle: style,
+                  hintText: 'e.g. complete assignment',
                   hintStyle: style,
                   focusedBorder: focusedBorder,
                   enabledBorder: enabledBorder,
@@ -113,9 +114,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                       : SizedBox.shrink(),
                 ),
               ),
-              const SizedBox(height: 05),
-              globalText('Description', 15, FontWeight.w600),
-              const SizedBox(height: 05),
+              const SizedBox(height: 10),
               TextField(
                 cursorRadius: Radius.circular(50),
                 controller: descriptionController,
@@ -127,6 +126,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                     horizontal: 05,
                     vertical: 04,
                   ),
+                  labelStyle: style,
                   hintText: 'Enter Description (Optional)',
                   hintStyle: style,
                   focusedBorder: focusedBorder,
@@ -163,6 +163,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   ),
                 ],
               ),
+              globalText('Add to My Categories', 14, FontWeight.w600),
               StreamBuilder(
                 stream: myCategoriesStream,
                 builder: (context, snaps) {
@@ -173,75 +174,50 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   }
                   final data = snaps.data!.docs;
                   return SizedBox(
-                    height: height * 0.11,
+                    height: height * 0.05,
                     width: width * 1.0,
                     child: Card(
-                      elevation: 0,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 0,
-                        vertical: 04,
-                      ),
                       color: const Color(0x00000000),
                       shadowColor: const Color(0x00000000),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0),
-                        child: Column(
-                          crossAxisAlignment: .start,
-                          children: [
-                            globalText(
-                              'Add to My Categories',
-                              14,
-                              FontWeight.w600,
-                            ),
-                            const SizedBox(height: 05),
-                            Expanded(
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: data.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 03,
-                                    ),
-                                    child: ElevatedButton(
-                                      onLongPress: () => context
-                                          .read<StateManagementProvider>()
-                                          .resetCategorySelected(),
-                                      onPressed: () async {
-                                        context
-                                            .read<StateManagementProvider>()
-                                            .selectedCategoryStatus(
-                                              data[index]['Category Name'],
-                                            );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        overlayColor: const Color(0xFF000000),
-                                        side: BorderSide(
-                                          color: const Color(0xFF000000),
-                                          width: 1.5,
-                                        ),
-                                        backgroundColor: Theme.of(
-                                          context,
-                                        ).colorScheme.onPrimary,
-                                        shape: mainRadius,
-                                        fixedSize: Size(
-                                          width * 0.43,
-                                          height * 0.045,
-                                        ),
-                                      ),
-                                      child: globalText(
-                                        data[index]['Category Name'],
-                                        13,
-                                        FontWeight.w600,
-                                      ),
-                                    ),
-                                  );
-                                },
+                      clipBehavior: .antiAlias,
+                      margin: const EdgeInsets.symmetric(horizontal: 0),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: data.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 03),
+                            child: ElevatedButton(
+                              onLongPress: () => context
+                                  .read<StateManagementProvider>()
+                                  .resetCategorySelected(),
+                              onPressed: () async {
+                                context
+                                    .read<StateManagementProvider>()
+                                    .selectedCategoryStatus(
+                                      data[index]['Category Name'],
+                                    );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                overlayColor: const Color(0xFF000000),
+                                side: BorderSide(
+                                  color: const Color(0xFF000000),
+                                  width: 1.5,
+                                ),
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimary,
+                                shape: mainRadius,
+                                fixedSize: Size(width * 0.43, height * 0.045),
+                              ),
+                              child: globalText(
+                                data[index]['Category Name'],
+                                13,
+                                FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 05),
-                          ],
-                        ),
+                          );
+                        },
                       ),
                     ),
                   );
@@ -264,6 +240,9 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                   globalText('Completion Time', 13, FontWeight.w600),
                   ElevatedButton(
                     onPressed: () async {
+                      WidgetsBinding.instance.addPostFrameCallback((_){
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      });
                       final date = await showDatePicker(
                         builder: (context, child) {
                           return Theme(
@@ -284,7 +263,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
                         context
                             .read<StateManagementProvider>()
                             .settingTheCompletionDate(date);
-                        WidgetsBinding.instance.addPostFrameCallback((_){
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
                           FocusScope.of(context).unfocus();
                         });
                       }
@@ -374,11 +353,11 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
       padding: EdgeInsets.all(0),
 
       backgroundColor: c,
-      overlayColor: Colors.black,
+      overlayColor: const Color(0xFF000000),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       fixedSize: Size(
-        MediaQuery.of(context).size.width * 0.465,
-        MediaQuery.of(context).size.height * 0.055,
+        MediaQuery.of(context).size.width * 0.45,
+        MediaQuery.of(context).size.height * 0.054,
       ),
     );
   }
@@ -387,7 +366,7 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
     return ElevatedButton.styleFrom(
       backgroundColor: c,
       overlayColor: const Color(0xFF000000),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       fixedSize: Size(
         MediaQuery.of(context).size.width * 0.35,
         MediaQuery.of(context).size.height * 0.063,

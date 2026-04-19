@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -254,6 +253,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () async {
+                                    WidgetsBinding.instance.addPostFrameCallback((_){
+                                      FocusManager.instance.primaryFocus?.unfocus();
+                                    });
                                     final date = await showDatePicker(
                                       context: (context),
                                       builder: (context, child) {
@@ -274,11 +276,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                       context
                                           .read<StateManagementProvider>()
                                           .assigningDate(date);
-                                    }
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                          FocusScope.of(context).unfocus();
-                                        });
+                                    }                                    
                                   },
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color(0xFF000000),

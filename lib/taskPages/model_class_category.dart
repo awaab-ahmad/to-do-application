@@ -65,7 +65,7 @@ class _ModelClassState extends State<ModelCategoryClass> {
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 08),
+        padding: EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           children: [
             Row(
