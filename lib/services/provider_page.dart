@@ -30,6 +30,27 @@ class StateManagementProvider extends ChangeNotifier {
   TextEditingController signUpUserName = TextEditingController();
   TextEditingController signUpEmail = TextEditingController();
   TextEditingController signUpPassword = TextEditingController();
+  TextEditingController? taskTitleCont;
+  TextEditingController? descCont;
+  Stream? categoriesStream;
+
+  void settingControllers() {
+    taskTitleCont = TextEditingController();
+    descCont = TextEditingController();
+  }
+
+  void disposingController() {
+    taskTitleCont!.clear();
+    descCont!.clear();
+  }
+
+  void streamFetching() {
+    categoriesStream = firestore
+        .collection('Users')
+        .doc(auth.currentUser!.uid)
+        .collection('Categories')
+        .snapshots();
+  }
 
   Future<void> signUpFunction(BuildContext context) async {
     final bar = ScaffoldMessenger.of(context);
@@ -147,18 +168,14 @@ class StateManagementProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void cancelButtonAction(
-    TextEditingController titleController,
-    TextEditingController descriptionController,
-  ) {
-    titleController.clear();
-    descriptionController.clear();
-    notifyListeners();
+  void cancelButtonAction() {
+    taskTitleCont!.clear();
+    descCont!.clear();
   }
 
   void creatingTaskOpeningFunc() {
-    taskCategory = 'Not Set';
-    taskStatus = 'Not Set';
+    if (taskCategory != 'Not Set') taskCategory = 'Not Set';
+    if (taskStatus != 'Not Set') taskStatus = 'Not Set';
   }
 
   // Continueing the New Phase of bringing the Firebase
@@ -183,14 +200,10 @@ class StateManagementProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> taskCreationFunction(
-    TextEditingController title,
-    TextEditingController desc,
-    BuildContext context,
-  ) async {
+  Future<void> taskCreationFunction(BuildContext context) async {
     final bar = ScaffoldMessenger.of(context);
     try {
-      if (title.text.trim().isNotEmpty) {
+      if (taskTitleCont!.text.trim().isNotEmpty) {
         if (taskStatus != 'Not Set') {
           isSettingTask = true;
           notifyListeners();
@@ -204,10 +217,10 @@ class StateManagementProvider extends ChangeNotifier {
               .set({
                 'Task Status': taskStatus,
                 'Category Name': taskCategory,
-                'Task Title': title.text.trim(),
-                'Task Description': (desc.text.trim().isEmpty)
+                'Task Title': taskTitleCont!.text.trim(),
+                'Task Description': (descCont!.text.trim().isEmpty)
                     ? 'No description Provided'
-                    : desc.text.trim(),
+                    : descCont!.text.trim(),
                 'Dated on': exactDate,
                 'Completion Date': (formattedCompletionDate == 'Not Set')
                     ? 'No completion date set'
@@ -218,8 +231,8 @@ class StateManagementProvider extends ChangeNotifier {
           bar.showSnackBar(globalBar('Task Created'));
           if (!context.mounted) return;
           Navigator.of(context).pop();
-          title.clear();
-          desc.clear();
+          taskTitleCont!.clear();
+          descCont!.clear();
           isSettingTask = false;
         } else {
           isSettingTask = false;
@@ -375,6 +388,11 @@ class StateManagementProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> frontPgLengthHelper() async {
+    await assigningLength();
+    await pendingCompletedLengthGetting();
+  }
+
   // making the helper function for the above three
   Future<void> helperOfPendingCompletedLength() async {
     await pendingCompletedLengthGetting();
@@ -392,7 +410,7 @@ class StateManagementProvider extends ChangeNotifier {
   // making function for the completion Date logic
   void assigningDate(DateTime dateToAssign) {
     taskCompletionDate = DateFormat('MMMM dd, yyy').format(dateToAssign);
-    if(kDebugMode) print('Task date is: $taskCompletionDate');
+    if (kDebugMode) print('Task date is: $taskCompletionDate');
     notifyListeners();
   }
 
@@ -417,7 +435,8 @@ class StateManagementProvider extends ChangeNotifier {
               "Task Description": newDescritionController.text.trim().isNotEmpty
                   ? newDescritionController.text.trim()
                   : 'No description Provided',
-              "Completion Date": (taskCompletionDate == 'No completion date set')
+              "Completion Date":
+                  (taskCompletionDate == 'No completion date set')
                   ? 'No completion date set'
                   : taskCompletionDate,
             });

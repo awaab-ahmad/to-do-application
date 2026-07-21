@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:to_do_app/services/global_items.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/taskPages/reset_pass.dart';
+import 'package:to_do_app/services/styles.dart';
 
 // ignore: must_be_immutable
 class LoginPage extends StatefulWidget {
@@ -14,17 +15,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  Icon passShowingIcon = Icon(
-    Icons.visibility_off,
-    color: const Color(0xFF333333),
-    size: 25,
-  );
-  bool passNotVisible = true;
-
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final sz = MediaQuery.sizeOf(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -33,24 +26,24 @@ class _LoginPageState extends State<LoginPage> {
         appBar: AppBar(
           systemOverlayStyle: systemOverlay,
           backgroundColor: Theme.of(context).colorScheme.onPrimary,
-          toolbarHeight: height * 0.07,
+          toolbarHeight: sz.height * 0.07,
           leading: IconButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
             icon: Icon(
               Icons.arrow_back,
-              size: height * 0.04,
+              size: sz.height * 0.04,
               color: const Color(0xFF333333),
             ),
           ),
           centerTitle: true,
-          title: globalText('Login', 18, FontWeight.w600),
+          title: const Text('Login', style: Style.black18),
         ),
         body: Column(
           children: [
             const SizedBox(height: 40),
-            Image.asset('images/key.png', height: height * 0.1),
+            Image.asset('images/key.png', height: sz.height * 0.1),
             const SizedBox(height: 80),
             Expanded(
               child: Container(
@@ -60,108 +53,26 @@ class _LoginPageState extends State<LoginPage> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
                       SizedBox(
-                        width: width * 0.5,
+                        width: sz.width * 0.5,
                         child: FittedBox(
-                          child: globalText(
+                          child: const Text(
                             'Welcome back!',
-                            18,
-                            FontWeight.w600,
+                            style: Style.black18,
                           ),
                         ),
                       ),
                       const SizedBox(height: 30),
-                      TextField(
-                        controller: context
-                            .read<StateManagementProvider>()
-                            .loginEmail,
-                        style: styleOnly(
-                          Color(0xff787878),
-                          13,
-                          FontWeight.w600,
-                        ),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          visualDensity: VisualDensity(vertical: 4),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 06,
-                            vertical: 1,
-                          ),
-                          hintText: 'e.g. user@gmail.com',
-                          labelText: 'Enter your email',
-                          labelStyle: styleOnly(
-                            const Color(0xFF787878),
-                            13,
-                            FontWeight.w600,
-                          ),
-                          hintStyle: styleOnly(
-                            Color(0xFF787878),
-                            10,
-                            FontWeight.w600,
-                          ),
-                          focusedBorder: focusedBorders,
-                          enabledBorder: enabledBorder,
-                        ),
-                      ),
+                      const _EmailField(),
                       const SizedBox(height: 20),
-                      TextField(
-                        obscureText: passNotVisible,
-                        controller: context
-                            .read<StateManagementProvider>()
-                            .loginPassword,
-                        style: styleOnly(
-                          Color(0xff787878),
-                          13,
-                          FontWeight.w600,
-                        ),
-                        decoration: InputDecoration(
-                          isDense: true,
-                          visualDensity: VisualDensity(vertical: -2),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 06,
-                            vertical: 0,
-                          ),
-                          labelText: 'Enter your password',
-                          labelStyle: styleOnly(
-                            const Color(0xFF787878),
-                            13,
-                            FontWeight.w600,
-                          ),
-                          hintText: '',
-                          hintStyle: styleOnly(
-                            Color(0xFF787878),
-                            10,
-                            FontWeight.w600,
-                          ),
-                          suffixIcon: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                passNotVisible = !passNotVisible;
-                                if (passNotVisible == false) {
-                                  passShowingIcon = Icon(
-                                    Icons.visibility,
-                                    size: 25,
-                                    color: const Color(0xFF333333),
-                                  );
-                                } else {
-                                  passShowingIcon = Icon(
-                                    Icons.visibility_off,
-                                    size: 25,
-                                    color: const Color(0xFF333333),
-                                  );
-                                }
-                              });
-                            },
-                            child: passShowingIcon,
-                          ),
-                          focusedBorder: focusedBorders,
-                          enabledBorder: enabledBorder,
-                        ),
-                      ),
+                      const _PassField(),
                       const SizedBox(height: 10),
                       Align(
                         alignment: Alignment.centerRight,
@@ -171,47 +82,14 @@ class _LoginPageState extends State<LoginPage> {
                               builder: (context) => ResetPassPage(),
                             ),
                           ),
-                          child: globalText(
+                          child: const Text(
                             'Forget Password?',
-                            10,
-                            FontWeight.w600,
+                            style: Style.black10,
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Center(
-                        child:
-                            context
-                                    .watch<StateManagementProvider>()
-                                    .isSettingTask ==
-                                true
-                            ? globalProgressIndicator()
-                            : ElevatedButton(
-                                onPressed: () async {
-                                  final p = context
-                                      .read<StateManagementProvider>();
-                                  if (p.loginEmail.text.trim().isNotEmpty &&
-                                      p.loginPassword.text.trim().isNotEmpty) {
-                                    await p.loginFunction(context);
-                                  } else {
-                                    if (kDebugMode) {
-                                      print('Please fill all fields');
-                                    }
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: Colors.black,
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryFixed,
-                                  fixedSize: Size(width * 1.0, height * 0.08),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: globalText('Login', 20, FontWeight.w600),
-                              ),
-                      ),
+                      Center(child: const _LoginButton()),
                     ],
                   ),
                 ),
@@ -220,6 +98,124 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _EmailField extends StatelessWidget {
+  const _EmailField();
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: context.read<StateManagementProvider>().loginEmail,
+      style: Style.brown13,
+      decoration: InputDecoration(
+        isDense: true,
+        visualDensity: VisualDensity(vertical: 4),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 06, vertical: 1),
+        hintText: 'e.g. user@gmail.com',
+        labelText: 'Enter your email',
+        labelStyle: Style.brown13,
+        hintStyle: Style.brown13,
+        focusedBorder: focusedBorders,
+        enabledBorder: enabledBorder,
+      ),
+    );
+  }
+}
+
+class _PassField extends StatefulWidget {
+  const _PassField();
+
+  @override
+  State<_PassField> createState() => _PassFieldState();
+}
+
+class _PassFieldState extends State<_PassField> {
+  Icon passShowingIcon = Icon(
+    Icons.visibility_off,
+    color: const Color(0xFF333333),
+    size: 25,
+  );
+  bool passNotVisible = true;
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      obscureText: passNotVisible,
+      controller: context.read<StateManagementProvider>().loginPassword,
+      style: Style.brown13,
+      decoration: InputDecoration(
+        isDense: true,
+        visualDensity: VisualDensity(vertical: -2),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 06, vertical: 0),
+        labelText: 'Enter your password',
+        labelStyle: Style.brown13,
+        hintText: '',
+        hintStyle: Style.brown10,
+        suffixIcon: GestureDetector(
+          onTap: () {
+            setState(() {
+              passNotVisible = !passNotVisible;
+              if (passNotVisible == false) {
+                passShowingIcon = Icon(
+                  Icons.visibility,
+                  size: 25,
+                  color: const Color(0xFF333333),
+                );
+              } else {
+                passShowingIcon = Icon(
+                  Icons.visibility_off,
+                  size: 25,
+                  color: const Color(0xFF333333),
+                );
+              }
+            });
+          },
+          child: passShowingIcon,
+        ),
+        focusedBorder: focusedBorders,
+        enabledBorder: enabledBorder,
+      ),
+    );
+  }
+}
+
+class _LoginButton extends StatelessWidget {
+  const _LoginButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return Selector<StateManagementProvider, bool>(
+      selector: (_, pro) => pro.isSettingTask,
+      builder: (_, isDone, _) {
+        if (isDone == true) {
+          return globalProgressIndicator();
+        }
+        return ElevatedButton(
+          onPressed: () async {
+            final p = context.read<StateManagementProvider>();
+            if (p.loginEmail.text.trim().isNotEmpty &&
+                p.loginPassword.text.trim().isNotEmpty) {
+              await p.loginFunction(context);
+            } else {
+              if (kDebugMode) {
+                print('Please fill all fields');
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            overlayColor: Colors.black,
+            backgroundColor: Theme.of(context).colorScheme.onPrimaryFixed,
+            fixedSize: Size(sz.width * 1.0, sz.height * 0.08),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          child: const Text('Login', style: Style.black18),
+        );
+      },
     );
   }
 }

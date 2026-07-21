@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:to_do_app/services/alert_dialog.dart';
 import 'package:to_do_app/services/bottom_sheets.dart';
 import 'package:to_do_app/services/global_items.dart';
+import 'package:to_do_app/services/navigator.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/taskPages/task_details_page.dart';
 
@@ -236,20 +237,20 @@ class _ModelClassState extends State<ModelCategoryClass> {
                                 height: height * 0.05,
                               ),
                             ),
-                            onTap: () {                   
+                            onTap: () {
                               context
-                                    .read<StateManagementProvider>()
-                                    .assigningTaskCompletionDateOnPageAppearing(
-                                      data[index]['Completion Date'],
-                                    );
-                                if (kDebugMode) {
-                                  print(
-                                    'Task Date is: ${context.read<StateManagementProvider>().taskCompletionDate}',
+                                  .read<StateManagementProvider>()
+                                  .assigningTaskCompletionDateOnPageAppearing(
+                                    data[index]['Completion Date'],
                                   );
-                                }          
+                              if (kDebugMode) {
+                                print(
+                                  'Task Date is: ${context.read<StateManagementProvider>().taskCompletionDate}',
+                                );
+                              }
                               Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => TaskDetailsPage(
+                                navigate(
+                                  TaskDetailsPage(
                                     taskId: data[index].id,
                                     title: data[index]['Task Title'],
                                     description:

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/services/global_items.dart';
 import 'package:to_do_app/services/provider_page.dart';
+import 'package:to_do_app/services/styles.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -20,8 +21,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool passNotVisible = true;
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final sz = MediaQuery.sizeOf(context);
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -30,24 +30,24 @@ class _SignUpPageState extends State<SignUpPage> {
         appBar: AppBar(
           systemOverlayStyle: systemOverlay,
           backgroundColor: Theme.of(context).colorScheme.onPrimary,
-          toolbarHeight: height * 0.07,
+          toolbarHeight: sz.height * 0.07,
           leading: IconButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
             icon: Icon(
               Icons.arrow_back,
-              size: height * 0.04,
+              size: sz.height * 0.04,
               color: const Color(0xFF000000),
             ),
           ),
           centerTitle: true,
-          title: globalText('Sign Up', 18, FontWeight.w600),
+          title: const Text('Sign Up', style: Style.black18),
         ),
         body: Column(
           children: [
             const SizedBox(height: 30),
-            Image.asset('images/add-user.png', height: height * 0.1),
+            Image.asset('images/add-user.png', height: sz.height * 0.1),
             const SizedBox(height: 40),
             Expanded(
               child: Container(
@@ -57,18 +57,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
                       SizedBox(
-                        width: width * 0.5,
+                        width: sz.width * 0.5,
                         child: FittedBox(
-                          child: globalText(
-                            'Create Account!',
-                            18,
-                            FontWeight.w600,
-                          ),
+                          child: const Text('Create Account!', style: Style.black18),
                         ),
                       ),
                       const SizedBox(height: 30),
@@ -76,11 +72,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         controller: context
                             .read<StateManagementProvider>()
                             .signUpUserName,
-                        style: styleOnly(
-                          Color(0xff787878),
-                          13,
-                          FontWeight.w600,
-                        ),
+                        style: Style.brown13,
                         decoration: InputDecoration(
                           isDense: true,
                           visualDensity: VisualDensity(vertical: 4),
@@ -89,17 +81,9 @@ class _SignUpPageState extends State<SignUpPage> {
                             vertical: 2,
                           ),
                           labelText: 'Enter username',
-                          labelStyle: styleOnly(
-                            Color(0xFF787878),
-                            13,
-                            FontWeight.w600,
-                          ),
+                          labelStyle: Style.brown13,
                           hintText: 'e.g. Imran',
-                          hintStyle: styleOnly(
-                            Color(0xFF787878),
-                            10,
-                            FontWeight.w600,
-                          ),
+                          hintStyle: Style.brown10,
                           focusedBorder: focusedBorders,
                           enabledBorder: enabledBorder,
                         ),
@@ -109,11 +93,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         controller: context
                             .read<StateManagementProvider>()
                             .signUpEmail,
-                        style: styleOnly(
-                          Color(0xff787878),
-                          13,
-                          FontWeight.w600,
-                        ),
+                        style: Style.brown13,
                         decoration: InputDecoration(
                           isDense: true,
                           visualDensity: VisualDensity(vertical: 4),
@@ -122,17 +102,9 @@ class _SignUpPageState extends State<SignUpPage> {
                             vertical: 2,
                           ),
                           labelText: 'Enter your email',
-                          labelStyle: styleOnly(
-                            Color(0xFF787878),
-                            13,
-                            FontWeight.w600,
-                          ),
+                          labelStyle: Style.brown13,
                           hintText: 'e.g. user@gmail.com',
-                          hintStyle: styleOnly(
-                            Color(0xFF787878),
-                            10,
-                            FontWeight.w600,
-                          ),
+                          hintStyle: Style.brown10,
                           focusedBorder: focusedBorders,
                           enabledBorder: enabledBorder,
                         ),
@@ -143,11 +115,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         controller: context
                             .read<StateManagementProvider>()
                             .signUpPassword,
-                        style: styleOnly(
-                          Color(0xff787878),
-                          13,
-                          FontWeight.w600,
-                        ),
+                        style: Style.brown13,
                         decoration: InputDecoration(
                           isDense: true,
                           visualDensity: VisualDensity(vertical: -2),
@@ -157,11 +125,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                           labelText: 'Create your password',
                           hintText: '',
-                          labelStyle: styleOnly(
-                            Color(0xFF787878),
-                            13,
-                            FontWeight.w600,
-                          ),
+                          labelStyle: Style.brown13,
                           suffixIcon: GestureDetector(
                             onTap: () {
                               setState(() {
@@ -187,42 +151,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Center(
-                        child:
-                            context
-                                    .watch<StateManagementProvider>()
-                                    .isSettingTask ==
-                                true
-                            ? globalProgressIndicator()
-                            : ElevatedButton(
-                                onPressed: () async {
-                                  final p = context
-                                      .read<StateManagementProvider>();
-                                  if (p.signUpUserName.text.trim().isNotEmpty &&
-                                      p.signUpEmail.text.trim().isNotEmpty &&
-                                      p.signUpPassword.text.trim().isNotEmpty) {
-                                    await p.signUpFunction(context);
-                                  } else {
-                                    if (kDebugMode) print('Fill all first');
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  overlayColor: const Color(0xFF000000),
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).colorScheme.onPrimaryFixed,
-                                  fixedSize: Size(width * 1.0, height * 0.08),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                child: globalText(
-                                  'Sign Up',
-                                  20,
-                                  FontWeight.w600,
-                                ),
-                              ),
-                      ),
+                      const _SignUpButton(),
                     ],
                   ),
                 ),
@@ -230,6 +159,46 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SignUpButton extends StatelessWidget {
+  const _SignUpButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return Center(
+      child: Selector<StateManagementProvider, bool>(
+        selector: (_, pro) => pro.isSettingTask,
+        builder: (_, isLoaded, _) {
+          if (isLoaded == true) {
+            return const GlobalIndicator();
+          }
+          return ElevatedButton(
+            onPressed: () async {
+              final p = context.read<StateManagementProvider>();
+              if (p.signUpUserName.text.trim().isNotEmpty &&
+                  p.signUpEmail.text.trim().isNotEmpty &&
+                  p.signUpPassword.text.trim().isNotEmpty) {
+                await p.signUpFunction(context);
+              } else {
+                if (kDebugMode) print('Fill all first');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              overlayColor: const Color(0xFF000000),
+              backgroundColor: Theme.of(context).colorScheme.onPrimaryFixed,
+              fixedSize: Size(sz.width * 1.0, sz.height * 0.08),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Sign Up', style: Style.black18),
+          );
+        },
       ),
     );
   }

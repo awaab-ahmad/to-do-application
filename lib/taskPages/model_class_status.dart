@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:to_do_app/services/alert_dialog.dart';
 import 'package:to_do_app/services/bottom_sheets.dart';
 import 'package:to_do_app/services/global_items.dart';
+import 'package:to_do_app/services/navigator.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/taskPages/task_details_page.dart';
+import 'package:to_do_app/services/styles.dart';
 
 // ignore: must_be_immutable
 class ModelStatusClass extends StatefulWidget {
@@ -118,10 +120,9 @@ class _ModelClassState extends State<ModelStatusClass> {
                       return Center(child: globalProgressIndicator());
                     } else if (!snp.hasData || snp.data!.docs.isEmpty) {
                       return Center(
-                        child: globalText(
+                        child: Text(
                           'No ${widget.appBarTitle} Tasks Present',
-                          16,
-                          FontWeight.w600,
+                          style: Style.black14,
                         ),
                       );
                     }
@@ -132,7 +133,7 @@ class _ModelClassState extends State<ModelStatusClass> {
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: 04),
                           child: ListTile(
-                            visualDensity: VisualDensity(vertical: -2),
+                            visualDensity: const VisualDensity(vertical: -2),
                             isThreeLine: true,
                             shape: mainRadius,
                             tileColor: Theme.of(context).colorScheme.onPrimary,
@@ -240,8 +241,8 @@ class _ModelClassState extends State<ModelStatusClass> {
                                   );
                                 }
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => TaskDetailsPage(
+                                  navigate(
+                                    TaskDetailsPage(
                                       taskId: data[index].id,
                                       title: data[index]['Task Title'],
                                       description:
@@ -271,9 +272,9 @@ class _ModelClassState extends State<ModelStatusClass> {
                       },
                     );
                   },
-                ),                
+                ),
               ),
-            ),         
+            ),
           ],
         ),
       ),

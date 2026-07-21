@@ -4,6 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/taskPages/manage_account.dart';
+import 'package:to_do_app/services/styles.dart';
+
+// Making the Focused and the Enabled Border
+final focusedBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.circular(15),
+  borderSide: BorderSide(color: const Color(0xFFFFD83B), width: 1.2),
+);
+final enabledBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.circular(15),
+  borderSide: BorderSide(color: const Color(0xFF000000), width: 1.2),
+);
 
 // Making the Circular Progress Indicator for all use
 CircularProgressIndicator globalProgressIndicator() {
@@ -11,6 +22,20 @@ CircularProgressIndicator globalProgressIndicator() {
     strokeWidth: 4.5,
     color: const Color(0xFF3B82F6),
   );
+}
+
+class GlobalIndicator extends StatelessWidget {
+  const GlobalIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 4.5,
+        color: const Color(0xFF3B82F6),
+      ),
+    );
+  }
 }
 
 final mainRadius = RoundedRectangleBorder(
@@ -26,26 +51,13 @@ final focusedBorders = OutlineInputBorder(
   borderRadius: BorderRadius.circular(20),
 );
 
-final enabledBorder = OutlineInputBorder(
+final enabledBorders = OutlineInputBorder(
   borderRadius: BorderRadius.circular(20),
   borderSide: BorderSide(color: const Color(0xFF787878), width: 1.2),
 );
 
 Container frontPageDrawer(double width, BuildContext context, double height) {
   final pro = context.read<StateManagementProvider>();
-  Text drawerText(String text, double size, FontWeight fw) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        color: const Color(0xFF333333),
-        fontSize: size,
-        fontWeight: fw,
-      ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    );
-  }
-
   return Container(
     margin: const EdgeInsets.only(top: 10, bottom: 10, left: 10),
     decoration: BoxDecoration(
@@ -60,7 +72,7 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
           Row(
             mainAxisAlignment: .spaceBetween,
             children: [
-              globalText('To Do List', 18, FontWeight.w600),
+              const Text('To Do List', style: Style.black18),
               Builder(
                 builder: (context) => IconButton(
                   onPressed: () {
@@ -90,15 +102,13 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
                       crossAxisAlignment: .start,
                       children: [
                         const SizedBox(height: 05),
-                        drawerText(
+                        Text(
                           '${pro.auth.currentUser!.displayName}',
-                          11,
-                          FontWeight.w600,
+                          style: Style.black12,
                         ),
-                        drawerText(
+                        Text(
                           '${pro.auth.currentUser!.email}',
-                          11,
-                          FontWeight.w600,
+                          style: Style.black12,
                         ),
                         Align(
                           alignment: Alignment.centerRight,
@@ -129,7 +139,7 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
                                 mainAxisAlignment: .spaceBetween,
                                 children: [
                                   const SizedBox(width: 04),
-                                  drawerText('Manage', 12, FontWeight.w600),
+                                  const Text('Manage', style: Style.black12),
                                   Icon(
                                     Icons.settings,
                                     color: const Color(0xFF333333),
@@ -152,7 +162,7 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
           const Expanded(child: SizedBox()),
           Align(
             alignment: Alignment.centerLeft,
-            child: globalText('App Version: 2.3.4', 12, FontWeight.w600),
+            child: const Text('App Version: 2.3.6', style: Style.black12),
           ),
           const SizedBox(height: 10),
         ],

@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:to_do_app/services/alert_dialog.dart';
 import 'package:to_do_app/services/bottom_sheets.dart';
 import 'package:to_do_app/services/global_items.dart';
+import 'package:to_do_app/services/navigator.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/taskPages/creating_task_page.dart';
 import 'package:to_do_app/taskPages/model_class_status.dart';
+import 'package:to_do_app/services/styles.dart';
 import 'package:to_do_app/taskPages/model_class_category.dart';
 
 class FrontPage extends StatefulWidget {
@@ -17,22 +19,11 @@ class FrontPage extends StatefulWidget {
 }
 
 class _FrontPageState extends State<FrontPage> {
-  TextEditingController categoryController = TextEditingController();
-  // making the Stream to just fetch once
-  Stream? myCategoriesStream;
-
   @override
   void initState() {
     super.initState();
-    context.read<StateManagementProvider>().assigningLength();
-    myCategoriesStream = context
-        .read<StateManagementProvider>()
-        .firestore
-        .collection('Users')
-        .doc(context.read<StateManagementProvider>().auth.currentUser!.uid)
-        .collection('Categories')
-        .snapshots();
-    context.read<StateManagementProvider>().pendingCompletedLengthGetting();
+    context.read<StateManagementProvider>().streamFetching();
+    context.read<StateManagementProvider>().frontPgLengthHelper();
   }
 
   @override
@@ -61,7 +52,7 @@ class _FrontPageState extends State<FrontPage> {
             icon: Image.asset('images/side-menu.png', height: height * 0.03),
           ),
         ),
-        title: globalText('Dashboard', 18, FontWeight.w600),
+        title: const Text('Dashboard', style: Style.black18),
         centerTitle: true,
       ),
       body: Padding(
@@ -72,33 +63,17 @@ class _FrontPageState extends State<FrontPage> {
           ),
           children: [
             const SizedBox(height: 10),
-            globalText('Create Your Tasks', 18, FontWeight.w600),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => TaskCreationPage()),
-                );
-              },
-              style: addingTaskButtonStyle(Color(0xFFF2BB6C), width, height),
-              child: Column(
-                children: [
-                  ClipOval(
-                    child: Image.asset('images/add.png', height: height * 0.05),
-                  ),
-                  const Expanded(child: SizedBox()),
-                  globalText('Add a New Task', 14, FontWeight.w600),
-                ],
-              ),
-            ),
-            globalText('Categories:', 18, FontWeight.w600),
+            const Text('Create Your Tasks', style: Style.black18),
+            const _AddTaskButton(),
+            const Text('Assign To', style: Style.black18),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ModelStatusClass(
+                      navigate(
+                        ModelStatusClass(
                           appBarTitle: 'Pending',
                           taskTypeTitle: 'Pending Tasks',
                         ),
@@ -113,12 +88,12 @@ class _FrontPageState extends State<FrontPage> {
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
-                      globalText('Pending', 15, FontWeight.w600),
+                      const Text('Pending', style: Style.black15),
                       const Expanded(child: SizedBox()),
-                      globalText(
-                        'Tasks: ${context.watch<StateManagementProvider>().pendingTasks}',
-                        14,
-                        FontWeight.w600,
+                      Selector<StateManagementProvider, int>(
+                        selector: (_, pro) => pro.pendingTasks,
+                        builder: (_, pending, _) =>
+                            Text('Tasks: $pending', style: Style.black14),
                       ),
                       const SizedBox(height: 02),
                     ],
@@ -128,8 +103,8 @@ class _FrontPageState extends State<FrontPage> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ModelStatusClass(
+                      navigate(
+                        ModelStatusClass(
                           appBarTitle: 'Completed',
                           taskTypeTitle: 'Completed Tasks',
                         ),
@@ -144,12 +119,12 @@ class _FrontPageState extends State<FrontPage> {
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
-                      globalText('Completed', 15, FontWeight.w600),
+                      const Text('Completed', style: Style.black15),
                       const Expanded(child: SizedBox()),
-                      globalText(
-                        'Tasks: ${context.watch<StateManagementProvider>().completedTasks}',
-                        14,
-                        FontWeight.w600,
+                      Selector<StateManagementProvider, int>(
+                        selector: (_, pro) => pro.completedTasks,
+                        builder: (_, completed, _) =>
+                            Text('Tasks: $completed', style: Style.black14),
                       ),
                       const SizedBox(height: 02),
                     ],
@@ -158,193 +133,19 @@ class _FrontPageState extends State<FrontPage> {
               ],
             ),
             const SizedBox(height: 06),
-            ElevatedButton(
-              onPressed: () async {
-                showModalBottomSheet(
-                  isScrollControlled: true,
-                  useSafeArea: true,
-                  backgroundColor: const Color(0x00000000),
-                  context: context,
-                  builder: (context) {
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                      ),
-                      child: categoryCreatingBottomSheet(
-                        width,
-                        height,
-                        context,
-                        categoryController,
-                        () => context
-                            .read<StateManagementProvider>()
-                            .categoryCreation(categoryController),
-                      ),
-                    );
-                  },
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                alignment: Alignment.centerLeft,
-                overlayColor: const Color(0xFF000000),
-                backgroundColor: const Color(0xFF86B2C5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                side: BorderSide(width: 1.5, color: const Color(0xFF000000)),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 08,
-                  horizontal: 15,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: .start,
-                children: [
-                  SizedBox(
-                    width: width * 0.65,
-                    child: FittedBox(
-                      child: globalText(
-                        'Create your own category',
-                        14,
-                        FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const Expanded(child: SizedBox()),
-                  Image.asset('images/list.png', height: height * 0.04),
-                ],
-              ),
-            ),
-            globalText('My Categories', 18, FontWeight.w600),
-            StreamBuilder(
-              stream: myCategoriesStream,
-              builder: (context, snaps) {
-                if (snaps.connectionState == ConnectionState.waiting) {
-                  return Center(child: globalProgressIndicator());
-                } else if (!snaps.hasData || snaps.data!.docs.isEmpty) {
-                  return SizedBox.shrink();
-                }
-                final data = snaps.data!.docs;
-                return SizedBox(
-                  height: height * 0.06,
-                  width: width * 1.0,
-                  child: Card(
-                    margin: const EdgeInsets.all(0),
-                    color: const Color(0x00000000),
-                    shadowColor: const Color(0x00000000),
-                    clipBehavior: .antiAlias,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: data.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 03),
-                          child: ElevatedButton(
-                            onLongPress: () {
-                              if (kDebugMode) print(data[index].id);
-                              showDialog(
-                                context: context,
-                                builder: (alertContext) => ModelAlertDialogs(
-                                  alertDialogContext: alertContext,
-                                  title: 'Want to remove this Category?',
-                                  firstElevatedButtonTitle: 'No',
-                                  secondElevatedButtonTitle: 'Yes',
-                                  firstElevatedButtonFunc: () =>
-                                      Navigator.of(context).pop(),
-                                  secondElevatedButtonFunc: () async {
-                                    await context
-                                        .read<StateManagementProvider>()
-                                        .categoryDeletion(data[index].id);
-                                  },
-                                ),
-                              );
-                            },
-                            onPressed: () {
-                              if (kDebugMode) {
-                                print(
-                                  'The Name of this Page is: ${data[index]['Category Name']}',
-                                );
-                              }
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => ModelCategoryClass(
-                                    appBarTitle: data[index]['Category Name'],
-                                    taskTypeTitle:
-                                        '${data[index]['Category Name']} Tasks',
-                                  ),
-                                ),
-                              );
-                            },
-                            style: myCategoriesStyle(width, height),
-                            child: globalText(
-                              data[index]['Category Name'],
-                              15,
-                              FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
+            _AddCategoryButton(),
+            const _MyCategories(),
             const SizedBox(height: 03),
             Row(
               children: [
-                globalText('Recently Deleted', 18, FontWeight.w600),
+                const Text('Recently Deleted', style: Style.black18),
                 const SizedBox(width: 05),
-                globalText('', 12, FontWeight.w600),
+                const Text('', style: Style.black15),
               ],
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ModelStatusClass(
-                    appBarTitle: 'Deleted',
-                    taskTypeTitle: 'Deleted Tasks',
-                  ),
-                ),
-              ),
-              style: addingTaskButtonStyle(
-                const Color(0xFFAEAEAE),
-                width,
-                height,
-              ),
-              child: Column(
-                children: [
-                  Image.asset('images/delete.png', height: height * 0.05),
-                  const Expanded(child: SizedBox()),
-                  globalText('Deleted Tasks', 14, FontWeight.w600),
-                ],
-              ),
-            ),
+            const _DeletedButton(),
           ],
         ),
-      ),
-    );
-  }
-
-  ButtonStyle addingTaskButtonStyle(Color c, double w, double h) {
-    return ElevatedButton.styleFrom(
-      overlayColor: const Color(0xFF000000),
-      fixedSize: Size(w * 1.0, h * 0.14),
-      padding: EdgeInsets.symmetric(horizontal: 0, vertical: 15),
-      backgroundColor: c,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      side: BorderSide(color: const Color(0xFF000000), width: 1.4),
-    );
-  }
-
-  ButtonStyle myCategoriesStyle(double w, double h) {
-    return ElevatedButton.styleFrom(
-      overlayColor: const Color(0xFF000000),
-      fixedSize: Size(w * 0.4, h * 0.035),
-      alignment: Alignment.centerLeft,
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      backgroundColor: const Color(0xFFF3DEBC),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        side: BorderSide(color: const Color(0xFF000000), width: 1.4),
       ),
     );
   }
@@ -358,6 +159,242 @@ class _FrontPageState extends State<FrontPage> {
       backgroundColor: c,
       side: BorderSide(color: Colors.black, width: 1.4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    );
+  }
+}
+
+class _AddTaskButton extends StatelessWidget {
+  const _AddTaskButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.of(context).push(navigate(const TaskCreationPage()));
+      },
+      style: ElevatedButton.styleFrom(
+        overlayColor: const Color(0xFF000000),
+        fixedSize: Size(sz.width * 1.0, sz.height * 0.14),
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+        backgroundColor: const Color(0xFFF2BB6C),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        side: BorderSide(color: const Color(0xFF000000), width: 1.4),
+      ),
+      child: Column(
+        children: [
+          ClipOval(
+            child: Image.asset('images/add.png', height: sz.height * 0.05),
+          ),
+          const Expanded(child: SizedBox()),
+          const Text('Add a New Task', style: Style.black14),
+        ],
+      ),
+    );
+  }
+}
+
+class _AddCategoryButton extends StatelessWidget {
+  final TextEditingController categoryController = TextEditingController();
+
+  _AddCategoryButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return ElevatedButton(
+      onPressed: () async {
+        showModalBottomSheet(
+          isScrollControlled: true,
+          useSafeArea: true,
+          backgroundColor: const Color(0x00000000),
+          context: context,
+          builder: (context) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: categoryCreatingBottomSheet(
+                sz.width,
+                sz.height,
+                context,
+                categoryController,
+                () => context.read<StateManagementProvider>().categoryCreation(
+                  categoryController,
+                ),
+              ),
+            );
+          },
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        overlayColor: const Color(0xFF000000),
+        backgroundColor: const Color(0xFF86B2C5),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        side: BorderSide(width: 1.5, color: const Color(0xFF000000)),
+        padding: const EdgeInsets.symmetric(vertical: 08, horizontal: 15),
+      ),
+      child: Row(
+        mainAxisAlignment: .start,
+        children: [
+          SizedBox(
+            width: sz.width * 0.65,
+            child: FittedBox(
+              child: const Text(
+                'Create your own category',
+                style: Style.black14,
+              ),
+            ),
+          ),
+          const Expanded(child: SizedBox()),
+          Image.asset('images/list.png', height: sz.height * 0.04),
+        ],
+      ),
+    );
+  }
+}
+
+class _MyCategories extends StatefulWidget {
+  const _MyCategories();
+
+  @override
+  State<_MyCategories> createState() => _MyCategoriesState();
+}
+
+class _MyCategoriesState extends State<_MyCategories> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return StreamBuilder(
+      stream: context.read<StateManagementProvider>().categoriesStream,
+      builder: (context, snaps) {
+        if (snaps.connectionState == ConnectionState.waiting) {
+          return Center(child: GlobalIndicator());
+        } else if (!snaps.hasData || snaps.data!.docs.isEmpty) {
+          return SizedBox.shrink();
+        }
+        final data = snaps.data!.docs;
+        return Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text('My Categories', style: Style.black18),
+            SizedBox(
+              height: sz.height * 0.06,
+              width: sz.width * 1.0,
+              child: Card(
+                margin: const EdgeInsets.all(0),
+                color: const Color(0x00000000),
+                shadowColor: const Color(0x00000000),
+                clipBehavior: .antiAlias,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 03),
+                      child: ElevatedButton(
+                        onLongPress: () {
+                          if (kDebugMode) print(data[index].id);
+                          showDialog(
+                            context: context,
+                            builder: (alertContext) => ModelAlertDialogs(
+                              alertDialogContext: alertContext,
+                              title: 'Want to remove this Category?',
+                              firstElevatedButtonTitle: 'No',
+                              secondElevatedButtonTitle: 'Yes',
+                              firstElevatedButtonFunc: () =>
+                                  Navigator.of(context).pop(),
+                              secondElevatedButtonFunc: () async {
+                                await context
+                                    .read<StateManagementProvider>()
+                                    .categoryDeletion(data[index].id);
+                              },
+                            ),
+                          );
+                        },
+                        onPressed: () {
+                          if (kDebugMode) {
+                            print(
+                              'The Name of this Page is: ${data[index]['Category Name']}',
+                            );
+                          }
+                          Navigator.of(context).push(
+                            navigate(
+                              ModelCategoryClass(
+                                appBarTitle: data[index]['Category Name'],
+                                taskTypeTitle:
+                                    '${data[index]['Category Name']} Tasks',
+                              ),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          overlayColor: const Color(0xFF000000),
+                          fixedSize: Size(sz.width * 0.4, sz.height * 0.035),
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          backgroundColor: const Color(0xFFF3DEBC),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            side: BorderSide(
+                              color: const Color(0xFF000000),
+                              width: 1.4,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          data[index]['Category Name'],
+                          style: Style.black15,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DeletedButton extends StatelessWidget {
+  const _DeletedButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return ElevatedButton(
+      onPressed: () => Navigator.of(context).push(
+        navigate(
+          ModelStatusClass(
+            appBarTitle: 'Deleted',
+            taskTypeTitle: 'Deleted Tasks',
+          ),
+        ),
+      ),
+      style: ElevatedButton.styleFrom(
+        overlayColor: const Color(0xFF000000),
+        fixedSize: Size(sz.width * 1.0, sz.height * 0.14),
+        padding: EdgeInsets.symmetric(horizontal: 0, vertical: 15),
+        backgroundColor: const Color(0xFFAEAEAE),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        side: BorderSide(color: const Color(0xFF000000), width: 1.4),
+      ),
+      child: Column(
+        children: [
+          Image.asset('images/delete.png', height: sz.height * 0.05),
+          const Expanded(child: SizedBox()),
+          const Text('Deleted Tasks', style: Style.black14),
+        ],
+      ),
     );
   }
 }
