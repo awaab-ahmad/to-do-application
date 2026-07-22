@@ -13,32 +13,18 @@ import 'package:to_do_app/services/styles.dart';
 
 // ignore: must_be_immutable
 class ModelStatusClass extends StatefulWidget {
-  String appBarTitle;
-  String taskTypeTitle;
-  ModelStatusClass({
-    super.key,
-    required this.appBarTitle,
-    required this.taskTypeTitle,
-  });
+  final String appBarTitle;
+  const ModelStatusClass({super.key, required this.appBarTitle});
 
   @override
   State<ModelStatusClass> createState() => _ModelClassState();
 }
 
 class _ModelClassState extends State<ModelStatusClass> {
-  Stream? myCategoriesStream;
   Stream? nameCategories;
   @override
   void initState() {
     super.initState();
-    myCategoriesStream = context
-        .read<StateManagementProvider>()
-        .firestore
-        .collection('Users')
-        .doc(context.read<StateManagementProvider>().auth.currentUser!.uid)
-        .collection('Tasks')
-        .where('Task Status', isEqualTo: widget.appBarTitle)
-        .snapshots();
     nameCategories = context
         .read<StateManagementProvider>()
         .firestore
@@ -50,21 +36,20 @@ class _ModelClassState extends State<ModelStatusClass> {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final sz = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
         systemOverlayStyle: systemOverlay,
-        toolbarHeight: height * 0.05,
+        toolbarHeight: sz.height * 0.05,
         scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
           padding: EdgeInsets.zero,
-          icon: Icon(Icons.arrow_back, size: height * 0.04),
+          icon: Icon(Icons.arrow_back, size: sz.height * 0.04),
         ),
-        title: globalText(widget.appBarTitle, 18, FontWeight.w600),
+        title: Text(widget.appBarTitle, style: Style.black18),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.onSecondary,
         shape: const RoundedRectangleBorder(
@@ -78,14 +63,13 @@ class _ModelClassState extends State<ModelStatusClass> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                globalText(widget.taskTypeTitle, 18, FontWeight.w600),
+                Text('${widget.appBarTitle} Tasks', style: Style.black18),
                 IconButton(
                   onPressed: () {
                     if (widget.appBarTitle == 'Deleted') {
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialogOfTaskInformation(
-                          height: height * 0.14,
                           task1:
                               'Circular button to restore the task to task Categories',
                           task2: 'Trash button to permanently delete the task',
@@ -94,15 +78,14 @@ class _ModelClassState extends State<ModelStatusClass> {
                     } else {
                       showDialog(
                         context: (context),
-                        builder: (context) =>
-                            behaviorAlertDialog(height * 0.17),
+                        builder: (context) => const BehaviorDialog(),
                       );
                     }
                   },
                   padding: EdgeInsets.zero,
                   icon: Image.asset(
                     'images/information-button.png',
-                    height: height * 0.04,
+                    height: sz.height * 0.04,
                   ),
                 ),
               ],
@@ -114,10 +97,12 @@ class _ModelClassState extends State<ModelStatusClass> {
                 color: const Color(0x00000000),
                 shadowColor: const Color(0x00000000),
                 child: StreamBuilder(
-                  stream: myCategoriesStream,
+                  stream: context
+                      .read<StateManagementProvider>()
+                      .taskStreamFetch(widget.appBarTitle),
                   builder: (context, snp) {
                     if (snp.connectionState == ConnectionState.waiting) {
-                      return Center(child: globalProgressIndicator());
+                      return Center(child: const GlobalIndicator());
                     } else if (!snp.hasData || snp.data!.docs.isEmpty) {
                       return Center(
                         child: Text(
@@ -131,13 +116,13 @@ class _ModelClassState extends State<ModelStatusClass> {
                       itemCount: data.length,
                       itemBuilder: (context, index) {
                         return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 04),
+                          padding: const EdgeInsets.symmetric(vertical: 04),
                           child: ListTile(
                             visualDensity: const VisualDensity(vertical: -2),
                             isThreeLine: true,
                             shape: mainRadius,
                             tileColor: Theme.of(context).colorScheme.onPrimary,
-                            contentPadding: EdgeInsets.symmetric(
+                            contentPadding: const EdgeInsets.symmetric(
                               horizontal: 05,
                               vertical: 0,
                             ),
@@ -146,7 +131,6 @@ class _ModelClassState extends State<ModelStatusClass> {
                                 context
                                     .read<StateManagementProvider>()
                                     .movingToANDcategoryCleaner();
-                                if (kDebugMode) print(data[index].id);
                                 showModalBottomSheet(
                                   backgroundColor: const Color(0x00000000),
                                   useSafeArea: true,
@@ -156,12 +140,8 @@ class _ModelClassState extends State<ModelStatusClass> {
                                       horizontal: 10,
                                       vertical: 15,
                                     ),
-                                    child: movingTasksFromOneToOtherSheet(
-                                      context,
-                                      nameCategories,
-                                      data[index].id,
-                                      width,
-                                      height,
+                                    child: MovingTaskSheet(
+                                      taskId: data[index].id,
                                     ),
                                   ),
                                 );
@@ -170,16 +150,11 @@ class _ModelClassState extends State<ModelStatusClass> {
                               icon: Icon(
                                 Icons.circle_outlined,
                                 color: const Color(0xFF000000),
-                                size: height * 0.045,
+                                size: sz.height * 0.045,
                               ),
                             ),
                             trailing: IconButton(
                               onPressed: () {
-                                if (kDebugMode) {
-                                  print(
-                                    'The id of the doc is: ${data[index].id}',
-                                  );
-                                }
                                 if (widget.appBarTitle == 'Deleted') {
                                   showDialog(
                                     context: context,
@@ -223,7 +198,7 @@ class _ModelClassState extends State<ModelStatusClass> {
                               padding: EdgeInsets.zero,
                               icon: Image.asset(
                                 'images/delete.png',
-                                height: height * 0.045,
+                                height: sz.height * 0.045,
                               ),
                             ),
                             onTap: () {
@@ -257,13 +232,22 @@ class _ModelClassState extends State<ModelStatusClass> {
                                 );
                               }
                             },
-                            title: textForTaskPages(data[index]['Task Title']),
+                            title: Text(
+                              data[index]['Task Title'],
+                              maxLines: 1,
+                              overflow: .ellipsis,
+                              style: Style.black12,
+                            ),
                             subtitle: Column(
                               crossAxisAlignment: .start,
                               children: [
-                                textForTaskPages(data[index]['Dated on']),
-                                textForTaskPages(
+                                Text(
+                                  data[index]['Dated on'],
+                                  style: Style.black12,
+                                ),
+                                Text(
                                   'Category: ${data[index]['Category Name']}',
+                                  style: Style.black12,
                                 ),
                               ],
                             ),

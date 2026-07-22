@@ -94,7 +94,7 @@ class ResetPassPage extends StatelessWidget {
                             barrierDismissible: false,
                             context: context,
                             builder: (context) =>
-                                Center(child: globalProgressIndicator()),
+                                Center(child: const GlobalIndicator()),
                           );
                           await context
                               .read<StateManagementProvider>()

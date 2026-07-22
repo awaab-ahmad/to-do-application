@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:to_do_app/services/global_items.dart';
 import 'package:to_do_app/services/provider_page.dart';
 import 'package:to_do_app/services/snack_bar.dart';
+import 'package:to_do_app/services/styles.dart';
 
 // In This file all the model Bottom sheets of this app would be managed
 // here making the list of all the images
@@ -137,7 +138,7 @@ Container userNameChangingBottomSheet(
                   ? SizedBox(
                       height: h * 0.05,
                       width: w * 0.33,
-                      child: Center(child: globalProgressIndicator()),
+                      child: Center(child: const GlobalIndicator()),
                     )
                   : ElevatedButton(
                       style: buttonStyle,
@@ -230,7 +231,7 @@ Container categoryCreatingBottomSheet(
                   ? SizedBox(
                       height: h * 0.06,
                       width: w * 0.3,
-                      child: Center(child: globalProgressIndicator()),
+                      child: Center(child: const GlobalIndicator()),
                     )
                   : ElevatedButton(
                       style: buttonStyle,
@@ -252,21 +253,21 @@ Container categoryCreatingBottomSheet(
 }
 
 // This below bottom sheet for moving tasks from one section to others
-Container movingTasksFromOneToOtherSheet(
-  BuildContext context,
-  Stream? streamData,
-  String taskId,
-  double w,
-  double h,
-) {
-  final buttonStyleForLastButtons = ElevatedButton.styleFrom(
-    overlayColor: const Color(0xff000000),
-    padding: const EdgeInsets.symmetric(vertical: 08),
-    shape: mainRadius,
-    backgroundColor: const Color(0xFFFFB74D),
-    fixedSize: Size(w * 0.35, h * 0.06),
-  );
-  ButtonStyle buttonStyle(Color c) {
+class MovingTaskSheet extends StatelessWidget {
+  final String taskId;
+  const MovingTaskSheet({super.key, required this.taskId});
+
+  static ButtonStyle buttonStyleLastBtn(double w, double h) {
+    return ElevatedButton.styleFrom(
+      overlayColor: const Color(0xff000000),
+      padding: const EdgeInsets.symmetric(vertical: 08),
+      shape: mainRadius,
+      backgroundColor: const Color(0xFFFFB74D),
+      fixedSize: Size(w * 0.35, h * 0.06),
+    );
+  }
+
+  static ButtonStyle buttonStyle(Color c, double w, double h) {
     return ElevatedButton.styleFrom(
       overlayColor: const Color(0xFF000000),
       padding: const EdgeInsets.all(0),
@@ -276,143 +277,161 @@ Container movingTasksFromOneToOtherSheet(
     );
   }
 
-  return Container(
-    clipBehavior: .antiAlias,
-    height: h * 0.48,
-    width: w * 1.0,
-    decoration: BoxDecoration(
-      color: const Color(0xFFFFF9F0),
-      borderRadius: BorderRadius.circular(25),
-    ),
-    child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 08),
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          const SizedBox(height: 05),
-          Center(
-            child: SizedBox(
-              height: 15,
-              width: 70,
-              child: Card(color: const Color(0xFF000000)),
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return Container(
+      clipBehavior: .antiAlias,
+      height: sz.height * 0.48,
+      width: sz.width * 1.0,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF9F0),
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 08),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const SizedBox(height: 05),
+            const Center(
+              child: SizedBox(
+                height: 15,
+                width: 70,
+                child: Card(color: Color(0xFF000000)),
+              ),
             ),
-          ),
-          const SizedBox(height: 05),
-          globalText('Move your task to', 14, FontWeight.w600),
-          Row(
-            mainAxisAlignment: .center,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  context.read<StateManagementProvider>().movingToWhichStatus(
-                    'Pending',
-                  );
-                },
-                style: buttonStyle(const Color(0xFF4FC3F7)),
-                child: globalText('Pending', 12, FontWeight.w600),
-              ),
-              const SizedBox(width: 05),
-              ElevatedButton(
-                onPressed: () async {
-                  context.read<StateManagementProvider>().movingToWhichStatus(
-                    'Completed',
-                  );
-                },
-                style: buttonStyle(const Color(0xFF81C784)),
-                child: globalText('Completed', 12, FontWeight.w600),
-              ),
-            ],
-          ),
-          globalText('My Categories', 14, FontWeight.w600),
-          Expanded(
-            child: StreamBuilder(
-              stream: streamData,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: globalProgressIndicator());
-                } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(
-                    child: globalText(
-                      'No User Categories found',
-                      10,
-                      FontWeight.w600,
-                    ),
-                  );
-                }
-                final data = snapshot.data!.docs;
-                return GridView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 02, vertical: 0),
-                  itemCount: data.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    childAspectRatio: 3.2,
-                  ),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 04,
-                        horizontal: 04,
-                      ),
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: mainRadius,
-                          overlayColor: const Color(0xFF000000),
-                          backgroundColor: const Color(0xFFFFE3D2),
-                          side: BorderSide(
-                            color: const Color(0xff000000),
-                            width: 1.2,
-                          ),
-                        ),
-                        onPressed: () async {
-                          context
-                              .read<StateManagementProvider>()
-                              .movingToWhichCategory(
-                                index,
-                                data[index]['Category Name'],
-                              );
-                        },
-                        child: globalText(
-                          data[index]['Category Name'],
-                          14,
-                          FontWeight.w600,
-                        ),
-                      ),
+            const SizedBox(height: 05),
+            const Text('Move your task to', style: Style.black14),
+            Row(
+              mainAxisAlignment: .center,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    context.read<StateManagementProvider>().movingToWhichStatus(
+                      'Pending',
                     );
                   },
-                );
-              },
+                  style: buttonStyle(
+                    const Color(0xFF4FC3F7),
+                    sz.width,
+                    sz.height,
+                  ),
+                  child: const Text('Pending', style: Style.black12),
+                ),
+                const SizedBox(width: 05),
+                ElevatedButton(
+                  onPressed: () async {
+                    context.read<StateManagementProvider>().movingToWhichStatus(
+                      'Completed',
+                    );
+                  },
+                  style: buttonStyle(
+                    const Color(0xFF81C784),
+                    sz.width,
+                    sz.height,
+                  ),
+                  child: const Text('Completed', style: Style.black12),
+                ),
+              ],
             ),
-          ),
-          globalText(
-            'Moving To: ${context.watch<StateManagementProvider>().movingTo}',
-            11,
-            FontWeight.w600,
-          ),
-          globalText(
-            'Category: ${context.watch<StateManagementProvider>().category}',
-            11,
-            FontWeight.w600,
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: .end,
-            children: [
-              ElevatedButton(
-                style: buttonStyleForLastButtons,
-                onPressed: () {
-                  Navigator.of(context).pop();
+            const Text('My Categories', style: Style.black14),
+            Expanded(
+              child: StreamBuilder(
+                stream: context
+                    .read<StateManagementProvider>()
+                    .streamFetching(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: const GlobalIndicator());
+                  } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No User Categories found',
+                        style: Style.black10,
+                      ),
+                    );
+                  }
+                  final data = snapshot.data!.docs;
+                  return GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 02,
+                      vertical: 0,
+                    ),
+                    itemCount: data.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 3.2,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 04,
+                          horizontal: 04,
+                        ),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: mainRadius,
+                            overlayColor: const Color(0xFF000000),
+                            backgroundColor: const Color(0xFFFFE3D2),
+                            side: BorderSide(
+                              color: const Color(0xff000000),
+                              width: 1.2,
+                            ),
+                          ),
+                          onPressed: () async {
+                            context
+                                .read<StateManagementProvider>()
+                                .movingToWhichCategory(
+                                  index,
+                                  data[index]['Category Name'],
+                                );
+                          },
+                          child: Text(
+                            data[index]['Category Name'],
+                            style: Style.black14,
+                          ),
+                        ),
+                      );
+                    },
+                  );
                 },
-                child: globalText('Cancel', 12, FontWeight.w600),
               ),
-              const SizedBox(width: 08),
-              context.read<StateManagementProvider>().isSettingTask == true
-                  ? SizedBox(
-                      height: h * 0.06,
-                      width: w * 0.35,
-                      child: Center(child: globalProgressIndicator()),
-                    )
-                  : ElevatedButton(
-                      style: buttonStyleForLastButtons,
+            ),
+            Selector<StateManagementProvider, String>(
+              selector: (_, pro) => pro.movingTo,
+              builder: (_, moveTo, _) =>
+                  Text('Moving To: $moveTo', style: Style.black11),
+            ),
+            Selector<StateManagementProvider, String>(
+              selector: (_, pro) => pro.category,
+              builder: (_, category, _) =>
+                  Text('Category: $category', style: Style.black11),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: .end,
+              children: [
+                ElevatedButton(
+                  style: buttonStyleLastBtn(sz.width, sz.height),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel', style: Style.black12),
+                ),
+                const SizedBox(width: 08),
+                Selector<StateManagementProvider, bool>(
+                  selector: (_, pro) => pro.isSettingTask,
+                  builder: (_, isSetting, _) {
+                    if (isSetting) {
+                      return SizedBox(
+                        height: sz.height * 0.06,
+                        width: sz.width * 0.35,
+                        child: Center(child: const GlobalIndicator()),
+                      );
+                    }
+                    return ElevatedButton(
+                      style: buttonStyleLastBtn(sz.width, sz.height),
                       onPressed: () async {
                         await context
                             .read<StateManagementProvider>()
@@ -423,13 +442,16 @@ Container movingTasksFromOneToOtherSheet(
                             .read<StateManagementProvider>()
                             .helperOfPendingCompletedLength();
                       },
-                      child: globalText('Move', 12, FontWeight.w600),
-                    ),
-            ],
-          ),
-          const SizedBox(height: 10),
-        ],
+                      child: const Text('Move', style: Style.black12),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

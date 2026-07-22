@@ -191,7 +191,7 @@ class _LoginButton extends StatelessWidget {
       selector: (_, pro) => pro.isSettingTask,
       builder: (_, isDone, _) {
         if (isDone == true) {
-          return globalProgressIndicator();
+          return const GlobalIndicator();
         }
         return ElevatedButton(
           onPressed: () async {

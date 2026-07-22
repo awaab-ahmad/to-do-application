@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/services/global_items.dart';
 import 'package:to_do_app/services/provider_page.dart';
+import 'package:to_do_app/services/styles.dart';
 
 // This file contains all the AlertDialogs for the app
 // ignore: must_be_immutable
@@ -47,7 +48,7 @@ class ModelAlertDialogs extends StatelessWidget {
             mainAxisSize: .min,
             children: [
               const SizedBox(height: 05),
-              globalText(title, 14, FontWeight.w600),
+              Text(title, style: Style.black14),
               const Expanded(child: SizedBox()),
               Row(
                 mainAxisAlignment: .end,
@@ -57,35 +58,36 @@ class ModelAlertDialogs extends StatelessWidget {
                       firstElevatedButtonFunc();
                     },
                     style: buttonStyle,
-                    child: globalText(
-                      firstElevatedButtonTitle,
-                      13,
-                      FontWeight.w600,
-                    ),
+                    child: Text(firstElevatedButtonTitle, style: Style.black13),
                   ),
                   const SizedBox(width: 08),
-                  context.watch<StateManagementProvider>().isSettingTask == true
-                      ? SizedBox(
+                  Selector<StateManagementProvider, bool>(
+                    selector: (_, pro) => pro.isSettingTask,
+                    builder: (_, loading, _) {
+                      if (loading) {
+                        return SizedBox(
                           height: h * 0.06,
                           width: w * 0.25,
-                          child: Center(child: globalProgressIndicator()),
-                        )
-                      : ElevatedButton(
-                          onPressed: () async {
-                            await secondElevatedButtonFunc();
-                            if (!context.mounted) return;
-                            Navigator.of(context).pop();
-                             await context
-                            .read<StateManagementProvider>()
-                            .helperOfPendingCompletedLength();
-                          },
-                          style: buttonStyle,
-                          child: globalText(
-                            secondElevatedButtonTitle,
-                            13,
-                            FontWeight.w600,
-                          ),
+                          child: Center(child: const GlobalIndicator()),
+                        );
+                      }
+                      return ElevatedButton(
+                        onPressed: () async {
+                          await secondElevatedButtonFunc();
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                          await context
+                              .read<StateManagementProvider>()
+                              .helperOfPendingCompletedLength();
+                        },
+                        style: buttonStyle,
+                        child: Text(
+                          secondElevatedButtonTitle,
+                          style: Style.black13,
                         ),
+                      );
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 20),

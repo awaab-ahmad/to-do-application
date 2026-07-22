@@ -19,7 +19,7 @@ class TaskDetailsPage extends StatefulWidget {
     required this.taskId,
     required this.title,
     required this.description,
-    required this.date,    
+    required this.date,
     required this.category,
     required this.completionDate,
     required this.isPressed,
@@ -31,7 +31,7 @@ class TaskDetailsPage extends StatefulWidget {
 
 class _TaskDetailsPageState extends State<TaskDetailsPage> {
   @override
-  void initState() {    
+  void initState() {
     super.initState();
   }
 
@@ -62,12 +62,12 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                     child: SizedBox(
                       height: 25,
                       width: 25,
-                      child: globalProgressIndicator(),
+                      child: const GlobalIndicator(),
                     ),
                   )
                 : IconButton(
                     onPressed: () async {
-                      FocusScope.of(context).unfocus();                   
+                      FocusScope.of(context).unfocus();
                       await context
                           .read<StateManagementProvider>()
                           .pushingUpdatedData(widget.taskId, context);
@@ -128,7 +128,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                               onPressed: () {
                                 setState(() {
                                   widget.isPressed = true;
-                                });                            
+                                });
                                 context
                                     .read<StateManagementProvider>()
                                     .puttingTextInTextFields(
@@ -253,9 +253,11 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () async {
-                                    WidgetsBinding.instance.addPostFrameCallback((_){
-                                      FocusManager.instance.primaryFocus?.unfocus();
-                                    });
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                          FocusManager.instance.primaryFocus
+                                              ?.unfocus();
+                                        });
                                     final date = await showDatePicker(
                                       context: (context),
                                       builder: (context, child) {
@@ -276,7 +278,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                       context
                                           .read<StateManagementProvider>()
                                           .assigningDate(date);
-                                    }                                    
+                                    }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     overlayColor: const Color(0xFF000000),

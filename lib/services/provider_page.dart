@@ -44,11 +44,20 @@ class StateManagementProvider extends ChangeNotifier {
     descCont!.clear();
   }
 
-  void streamFetching() {
-    categoriesStream = firestore
+  Stream streamFetching() {
+    return firestore
         .collection('Users')
         .doc(auth.currentUser!.uid)
         .collection('Categories')
+        .snapshots();
+  }
+
+  Stream taskStreamFetch(String statusNm) {
+    return firestore
+        .collection('Users')
+        .doc(auth.currentUser!.uid)
+        .collection('Tasks')
+        .where('Task Status', isEqualTo: statusNm)
         .snapshots();
   }
 
@@ -154,8 +163,8 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   void movingToANDcategoryCleaner() {
-    movingTo = 'Not Set';
-    category = 'Not Set';
+    if (movingTo != 'Not Set') movingTo = 'Not Set';
+    if (category != 'Not Set') category = 'Not Set';
   }
 
   void movingToWhichStatus(String value) {

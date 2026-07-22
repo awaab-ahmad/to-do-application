@@ -17,12 +17,12 @@ final enabledBorder = OutlineInputBorder(
 );
 
 // Making the Circular Progress Indicator for all use
-CircularProgressIndicator globalProgressIndicator() {
-  return CircularProgressIndicator(
-    strokeWidth: 4.5,
-    color: const Color(0xFF3B82F6),
-  );
-}
+// CircularProgressIndicator globalProgressIndicator() {
+//   return CircularProgressIndicator(
+//     strokeWidth: 4.5,
+//     color: const Color(0xFF3B82F6),
+//   );
+// }
 
 class GlobalIndicator extends StatelessWidget {
   const GlobalIndicator({super.key});
@@ -171,18 +171,18 @@ Container frontPageDrawer(double width, BuildContext context, double height) {
   );
 }
 
-Text textForTaskPages(String s) {
-  return Text(
-    maxLines: 1,
-    overflow: TextOverflow.ellipsis,
-    s,
-    style: GoogleFonts.poppins(
-      color: const Color(0xFf000000),
-      fontSize: 12,
-      fontWeight: FontWeight.w600,
-    ),
-  );
-}
+// Text textForTaskPages(String s) {
+//   return Text(
+//     maxLines: 1,
+//     overflow: TextOverflow.ellipsis,
+//     s,
+//     style: GoogleFonts.poppins(
+//       color: const Color(0xFf000000),
+//       fontSize: 12,
+//       fontWeight: FontWeight.w600,
+//     ),
+//   );
+// }
 
 Text globalText(String s, double fontSize, FontWeight fw) {
   return Text(
@@ -206,14 +206,12 @@ final systemOverlay = const SystemUiOverlayStyle(
 );
 
 class AlertDialogOfTaskInformation extends StatelessWidget {
-  final double height;
   final String? task1;
   final String? task2;
   final String? task3;
   final String? task4;
   const AlertDialogOfTaskInformation({
     super.key,
-    required this.height,
     this.task1,
     this.task2,
     this.task3,
@@ -222,28 +220,29 @@ class AlertDialogOfTaskInformation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
     return AlertDialog(
-      insetPadding: EdgeInsets.symmetric(horizontal: 15),
-      titlePadding: EdgeInsets.symmetric(horizontal: 15, vertical: 05),
-      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 02),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+      titlePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 05),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 02),
       backgroundColor: const Color(0xFFFFF9F0),
-      title: globalText('Task Behaviors', 18, FontWeight.w600),
+      title: const Text('Task Behaviors', style: Style.black18),
       content: SizedBox(
-        height: height,
+        height: sz.height * 0.14,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             (task1 != null && task1!.isNotEmpty)
-                ? globalText('1: $task1', 13, FontWeight.w600)
+                ? Text('1: $task1', style: Style.black13)
                 : SizedBox.shrink(),
             (task2 != null && task2!.isNotEmpty)
-                ? globalText('2: $task2', 13, FontWeight.w600)
+                ? Text('2: $task2', style: Style.black13)
                 : SizedBox.shrink(),
             (task3 != null && task3!.isNotEmpty)
-                ? globalText('3: $task3', 13, FontWeight.w600)
+                ? Text('3: $task3', style: Style.black13)
                 : SizedBox.shrink(),
             (task4 != null && task4!.isNotEmpty)
-                ? globalText('4: $task4', 13, FontWeight.w600)
+                ? Text('4: $task4', style: Style.black13)
                 : SizedBox.shrink(),
           ],
         ),
@@ -252,31 +251,35 @@ class AlertDialogOfTaskInformation extends StatelessWidget {
   }
 }
 
-Widget behaviorAlertDialog(double height) {
-  return AlertDialog(
-    insetPadding: const EdgeInsets.symmetric(horizontal: 15),
-    titlePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 05),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 02),
-    backgroundColor: const Color(0xFFFFF9F0),
-    title: globalText('Task Behaviors', 18, FontWeight.w600),
-    content: SizedBox(
-      height: height,
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          globalText('1: Click to Open up Details.', 14, FontWeight.w600),
-          globalText(
-            '2: Click the Circular Button to change Task Status',
-            14,
-            FontWeight.w600,
-          ),
-          globalText(
-            '3: Trash Button to move task to Recently deleted',
-            14,
-            FontWeight.w600,
-          ),
-        ],
+class BehaviorDialog extends StatelessWidget {
+  const BehaviorDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+      titlePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 05),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 02),
+      backgroundColor: const Color(0xFFFFF9F0),
+      title: const Text('Task Behaviors', style: Style.black18),
+      content: SizedBox(
+        height: height * 0.17,
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text('1: Click to Open up Details.', style: Style.black14),
+            const Text(
+              '2: Click the Circular Button to change Task Status',
+              style: Style.black14,
+            ),
+            const Text(
+              '3: Trash Button to move task to Recently deleted',
+              style: Style.black14,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }

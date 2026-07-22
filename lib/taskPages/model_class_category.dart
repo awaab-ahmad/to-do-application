@@ -8,6 +8,7 @@ import 'package:to_do_app/services/bottom_sheets.dart';
 import 'package:to_do_app/services/global_items.dart';
 import 'package:to_do_app/services/navigator.dart';
 import 'package:to_do_app/services/provider_page.dart';
+import 'package:to_do_app/services/styles.dart';
 import 'package:to_do_app/taskPages/task_details_page.dart';
 
 // ignore: must_be_immutable
@@ -72,12 +73,12 @@ class _ModelClassState extends State<ModelCategoryClass> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                globalText(widget.taskTypeTitle, 18, FontWeight.w600),
+                Text(widget.taskTypeTitle, style: Style.black18),
                 IconButton(
                   onPressed: () {
                     showDialog(
                       context: (context),
-                      builder: (context) => behaviorAlertDialog(height * 0.17),
+                      builder: (context) => const BehaviorDialog(),
                     );
                   },
                   padding: EdgeInsets.zero,
@@ -131,7 +132,7 @@ class _ModelClassState extends State<ModelCategoryClass> {
                   stream: myCategoriesStream,
                   builder: (context, snp) {
                     if (snp.connectionState == ConnectionState.waiting) {
-                      return Center(child: globalProgressIndicator());
+                      return Center(child: const GlobalIndicator());
                     } else if (!snp.hasData || snp.data!.docs.isEmpty) {
                       return Center(
                         child: globalText(
@@ -167,12 +168,8 @@ class _ModelClassState extends State<ModelCategoryClass> {
                                       horizontal: 10,
                                       vertical: 15,
                                     ),
-                                    child: movingTasksFromOneToOtherSheet(
-                                      context,
-                                      nameCategories,
-                                      data[index].id,
-                                      width,
-                                      height,
+                                    child: MovingTaskSheet(
+                                      taskId: data[index].id,
                                     ),
                                   ),
                                 );
@@ -265,13 +262,22 @@ class _ModelClassState extends State<ModelCategoryClass> {
                               );
                             },
                             shape: mainRadius,
-                            title: textForTaskPages(data[index]['Task Title']),
+                            title: Text(
+                              maxLines: 1,
+                              overflow: .ellipsis,
+                              data[index]['Task Title'],
+                              style: Style.black12,
+                            ),
                             subtitle: Column(
                               crossAxisAlignment: .start,
                               children: [
-                                textForTaskPages(data[index]['Dated on']),
-                                textForTaskPages(
+                                Text(
+                                  data[index]['Dated on'],
+                                  style: Style.black12,
+                                ),
+                                Text(
                                   'Category: ${data[index]['Category Name']}',
+                                  style: Style.black12,
                                 ),
                               ],
                             ),

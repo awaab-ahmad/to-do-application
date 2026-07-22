@@ -19,7 +19,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
   void initState() {
     super.initState();
     final p = context.read<StateManagementProvider>();
-    p.streamFetching();
     p.creatingTaskOpeningFunc();
     p.settingControllers();
   }
@@ -313,7 +312,7 @@ class _Categories extends StatelessWidget {
   Widget build(BuildContext cnt) {
     final sz = MediaQuery.sizeOf(cnt);
     return StreamBuilder(
-      stream: cnt.read<StateManagementProvider>().categoriesStream,
+      stream: cnt.read<StateManagementProvider>().streamFetching(),
       builder: (context, snaps) {
         if (snaps.connectionState == ConnectionState.waiting) {
           return Center(child: const GlobalIndicator());

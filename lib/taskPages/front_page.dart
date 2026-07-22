@@ -22,21 +22,19 @@ class _FrontPageState extends State<FrontPage> {
   @override
   void initState() {
     super.initState();
-    context.read<StateManagementProvider>().streamFetching();
     context.read<StateManagementProvider>().frontPgLengthHelper();
   }
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final sz = MediaQuery.sizeOf(context);
     return Scaffold(
-      drawer: SafeArea(child: frontPageDrawer(width, context, height)),
+      drawer: SafeArea(child: frontPageDrawer(sz.width, context, sz.height)),
       appBar: AppBar(
         systemOverlayStyle: systemOverlay,
         scrolledUnderElevation: 0,
         backgroundColor: Theme.of(context).colorScheme.onSecondary,
-        toolbarHeight: height * 0.06,
+        toolbarHeight: sz.height * 0.06,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             bottomLeft: Radius.circular(15),
@@ -49,7 +47,7 @@ class _FrontPageState extends State<FrontPage> {
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
-            icon: Image.asset('images/side-menu.png', height: height * 0.03),
+            icon: Image.asset('images/side-menu.png', height: sz.height * 0.03),
           ),
         ),
         title: const Text('Dashboard', style: Style.black18),
@@ -72,17 +70,12 @@ class _FrontPageState extends State<FrontPage> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      navigate(
-                        ModelStatusClass(
-                          appBarTitle: 'Pending',
-                          taskTypeTitle: 'Pending Tasks',
-                        ),
-                      ),
+                      navigate(const ModelStatusClass(appBarTitle: 'Pending')),
                     );
                   },
                   style: categoriesButtonStyle(
-                    width,
-                    height,
+                    sz.width,
+                    sz.height,
                     Theme.of(context).colorScheme.primary,
                   ),
                   child: Column(
@@ -104,16 +97,13 @@ class _FrontPageState extends State<FrontPage> {
                   onPressed: () {
                     Navigator.of(context).push(
                       navigate(
-                        ModelStatusClass(
-                          appBarTitle: 'Completed',
-                          taskTypeTitle: 'Completed Tasks',
-                        ),
+                        const ModelStatusClass(appBarTitle: 'Completed'),
                       ),
                     );
                   },
                   style: categoriesButtonStyle(
-                    width,
-                    height,
+                    sz.width,
+                    sz.height,
                     Theme.of(context).colorScheme.secondary,
                   ),
                   child: Column(
@@ -255,24 +245,14 @@ class _AddCategoryButton extends StatelessWidget {
   }
 }
 
-class _MyCategories extends StatefulWidget {
+class _MyCategories extends StatelessWidget {
   const _MyCategories();
-
-  @override
-  State<_MyCategories> createState() => _MyCategoriesState();
-}
-
-class _MyCategoriesState extends State<_MyCategories> {
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     final sz = MediaQuery.sizeOf(context);
     return StreamBuilder(
-      stream: context.read<StateManagementProvider>().categoriesStream,
+      stream: context.read<StateManagementProvider>().streamFetching(),
       builder: (context, snaps) {
         if (snaps.connectionState == ConnectionState.waiting) {
           return Center(child: GlobalIndicator());
@@ -372,14 +352,9 @@ class _DeletedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final sz = MediaQuery.sizeOf(context);
     return ElevatedButton(
-      onPressed: () => Navigator.of(context).push(
-        navigate(
-          ModelStatusClass(
-            appBarTitle: 'Deleted',
-            taskTypeTitle: 'Deleted Tasks',
-          ),
-        ),
-      ),
+      onPressed: () => Navigator.of(
+        context,
+      ).push(navigate(const ModelStatusClass(appBarTitle: 'Deleted'))),
       style: ElevatedButton.styleFrom(
         overlayColor: const Color(0xFF000000),
         fixedSize: Size(sz.width * 1.0, sz.height * 0.14),
