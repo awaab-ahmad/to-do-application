@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/services/global_items.dart';
-import 'package:to_do_app/services/provider_page.dart';
-import 'package:to_do_app/services/styles.dart';
+import 'package:to_do_app/utils/global_items.dart';
+import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/textStyles/styles.dart';
 
 // This file contains all the AlertDialogs for the app
 // ignore: must_be_immutable

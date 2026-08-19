@@ -1,0 +1,301 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/screens/after_account_screens/manage_account.dart';
+import 'package:to_do_app/utils/textStyles/styles.dart';
+
+// Making the Focused and the Enabled Border
+final focusedBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.circular(15),
+  borderSide: BorderSide(color: const Color(0xFFFFD83B), width: 1.2),
+);
+final enabledBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.circular(15),
+  borderSide: BorderSide(color: const Color(0xFF000000), width: 1.2),
+);
+
+// Making the Circular Progress Indicator for all use
+// CircularProgressIndicator globalProgressIndicator() {
+//   return CircularProgressIndicator(
+//     strokeWidth: 4.5,
+//     color: const Color(0xFF3B82F6),
+//   );
+// }
+
+class GlobalIndicator extends StatelessWidget {
+  const GlobalIndicator({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(
+        strokeWidth: 4.5,
+        color: const Color(0xFF3B82F6),
+      ),
+    );
+  }
+}
+
+final mainRadius = RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(25),
+);
+
+TextStyle styleOnly(Color c, double size, FontWeight fw) {
+  return GoogleFonts.poppins(color: c, fontSize: size, fontWeight: fw);
+}
+
+final focusedBorders = OutlineInputBorder(
+  borderSide: BorderSide(color: const Color(0xFfFFE372), width: 1.2),
+  borderRadius: BorderRadius.circular(20),
+);
+
+final enabledBorders = OutlineInputBorder(
+  borderRadius: BorderRadius.circular(20),
+  borderSide: BorderSide(color: const Color(0xFF787878), width: 1.2),
+);
+
+class FrontDrawer extends StatelessWidget {
+  const FrontDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return Container(
+      margin: const EdgeInsets.only(top: 10, bottom: 10, left: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        color: Theme.of(context).colorScheme.onSecondary,
+      ),
+      width: sz.width * 0.78,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                const Text('To Do List', style: Style.black18),
+                Builder(
+                  builder: (context) => IconButton(
+                    onPressed: () {
+                      Scaffold.of(context).closeDrawer();
+                    },
+                    icon: Icon(
+                      Icons.close,
+                      size: sz.height * 0.04,
+                      color: const Color(0xFF000000),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Card(
+              margin: const EdgeInsets.all(0),
+              color: Theme.of(context).colorScheme.secondary,
+              child: Row(
+                children: [
+                  ClipOval(
+                    child: Image.asset(
+                      'images/boy.png',
+                      height: sz.height * 0.08,
+                    ),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 03,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: .start,
+                        children: [
+                          const SizedBox(height: 05),
+                          Selector<StateManagementProvider, dynamic>(
+                            selector: (_, pro) => pro.auth,
+                            builder: (_, ath, _) => Text(
+                              '${ath.currentUser!.displayName}',
+                              style: Style.black12,
+                            ),
+                          ),
+                          Selector<StateManagementProvider, dynamic>(
+                            selector: (_, pro) => pro.auth.currentUser!.email,
+                            builder: (_, mail, _) {
+                              if (mail.length >= 15) {
+                                return FittedBox(
+                                  child: Text(mail, style: Style.black12),
+                                );
+                              }
+                              return Text(mail, style: Style.black12);
+                            },
+                          ),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Builder(
+                              builder: (context) => ElevatedButton(
+                                onPressed: () {
+                                  Scaffold.of(context).closeDrawer();
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ManageAccountPage(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  overlayColor: const Color(0xFF000000),
+                                  backgroundColor: const Color(0xFF4FC3F7),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  fixedSize: Size(
+                                    sz.width * 0.32,
+                                    sz.height * 0.045,
+                                  ),
+                                  side: BorderSide(
+                                    color: const Color(0xFF000000),
+                                    width: 1.4,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: .spaceBetween,
+                                  children: [
+                                    const SizedBox(width: 04),
+                                    const Text('Manage', style: Style.black12),
+                                    Icon(
+                                      Icons.settings,
+                                      color: const Color(0xFF333333),
+                                      size: sz.height * 0.03,
+                                    ),
+                                    const SizedBox(width: 04),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 05),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Expanded(child: SizedBox()),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: const Text('App Version: 2.3.8', style: Style.black12),
+            ),
+            const SizedBox(height: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Container frontPageDrawer(double width, BuildContext context, double height) {
+//   final pro = context.read<StateManagementProvider>();
+//   return
+// }
+
+// Text globalText(String s, double fontSize, FontWeight fw) {
+//   return Text(
+//     s,
+//     style: GoogleFonts.poppins(
+//       color: const Color(0xFF333333),
+//       fontSize: fontSize,
+//       fontWeight: fw,
+//     ),
+//   );
+// }
+
+// Making the SystemOverlay Style for Whole App
+final systemOverlay = const SystemUiOverlayStyle(
+  statusBarColor: Color(0x00000000),
+  statusBarIconBrightness: Brightness.dark,
+  systemNavigationBarColor: Color(0xFFFFF9F0),
+  systemNavigationBarContrastEnforced: false,
+  systemNavigationBarDividerColor: Color(0xFFFFF9F0),
+  systemNavigationBarIconBrightness: Brightness.dark,
+);
+
+class AlertDialogOfTaskInformation extends StatelessWidget {
+  final String? task1;
+  final String? task2;
+  final String? task3;
+  final String? task4;
+  const AlertDialogOfTaskInformation({
+    super.key,
+    this.task1,
+    this.task2,
+    this.task3,
+    this.task4,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+      titlePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 05),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 02),
+      backgroundColor: const Color(0xFFFFF9F0),
+      title: const Text('Task Behaviors', style: Style.black18),
+      content: SizedBox(
+        height: sz.height * 0.14,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            (task1 != null && task1!.isNotEmpty)
+                ? Text('1: $task1', style: Style.black13)
+                : SizedBox.shrink(),
+            (task2 != null && task2!.isNotEmpty)
+                ? Text('2: $task2', style: Style.black13)
+                : SizedBox.shrink(),
+            (task3 != null && task3!.isNotEmpty)
+                ? Text('3: $task3', style: Style.black13)
+                : SizedBox.shrink(),
+            (task4 != null && task4!.isNotEmpty)
+                ? Text('4: $task4', style: Style.black13)
+                : SizedBox.shrink(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BehaviorDialog extends StatelessWidget {
+  const BehaviorDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height;
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 15),
+      titlePadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 05),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 02),
+      backgroundColor: const Color(0xFFFFF9F0),
+      title: const Text('Task Behaviors', style: Style.black18),
+      content: SizedBox(
+        height: height * 0.17,
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const Text('1: Click to Open up Details.', style: Style.black14),
+            const Text(
+              '2: Click the Circular Button to change Task Status',
+              style: Style.black14,
+            ),
+            const Text(
+              '3: Trash Button to move task to Recently deleted',
+              style: Style.black14,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -4,8 +4,12 @@ PageRouteBuilder navigate(Widget page) {
   return PageRouteBuilder(
     reverseTransitionDuration: Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimate = CurvedAnimation(
+        parent: animation,
+        curve: Curves.fastOutSlowIn,
+      );
       return FadeTransition(
-        opacity: animation,
+        opacity: curvedAnimate,
         child: SlideTransition(
           position: Tween<Offset>(
             begin: Offset(1.0, 0),

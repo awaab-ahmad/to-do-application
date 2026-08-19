@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:to_do_app/services/snack_bar.dart';
-import 'package:to_do_app/taskPages/front_page.dart';
-import 'package:to_do_app/taskPages/login.dart';
+import 'package:to_do_app/utils/reusables.dart/snack_bar.dart';
+import 'package:to_do_app/screens/after_account_screens/front_page.dart';
+import 'package:to_do_app/screens/before_account_screens/login.dart';
 
 // Making the Class for the StateManagement
 
@@ -22,6 +22,7 @@ class StateManagementProvider extends ChangeNotifier {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   int pendingTasks = 0;
   int completedTasks = 0;
+
   TextEditingController newTitleController = TextEditingController();
   TextEditingController newDescritionController = TextEditingController();
   String taskCompletionDate = '';
@@ -33,6 +34,90 @@ class StateManagementProvider extends ChangeNotifier {
   TextEditingController? taskTitleCont;
   TextEditingController? descCont;
   Stream? categoriesStream;
+
+  // all new made variables and their used function on top
+  int indChange = 0;
+  int categoryInd = 0;
+  bool toSelectMultiple = false;
+  bool editDetailsPage = false;
+  Set<String> toSelectMList = {};
+
+  void changeInd(int ind) {
+    if (indChange == ind) {
+      if (kDebugMode) print('same index');
+    } else {
+      indChange = ind;
+      notifyListeners();
+    }
+  }
+
+  void changeCategoryInd(int ind) {
+    if (categoryInd == ind) {
+      if (kDebugMode) print('same index');
+    } else {
+      categoryInd = ind;
+      notifyListeners();
+    }
+  }
+
+  void allowMutlipleSelect() {
+    toSelectMultiple = true;
+    notifyListeners();
+  }
+
+  void cancelMultipleAllow() {
+    toSelectMultiple = false;
+    toSelectMList.clear();
+    notifyListeners();
+  }
+
+  void allowEditDetailsPg() {
+    editDetailsPage = true;
+    notifyListeners();
+  }
+
+  void disallowEditDetailsPg() {
+    editDetailsPage = false;   
+    notifyListeners();     
+  }
+
+  void addingMultipleItems(String taskId) {
+    if (toSelectMList.contains(taskId)) {
+      toSelectMList.remove(taskId);
+    } else {
+      toSelectMList.add(taskId);
+    }
+    if (kDebugMode) print(toSelectMList);
+    notifyListeners();
+  }
+
+  Future<void> movingMultipleTasks(String moveTo) async {
+    if (toSelectMList.isEmpty) return;
+    isSettingTask = true;
+    notifyListeners();
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      for (int i = 0; i < toSelectMList.length; i++) {
+        final id = toSelectMList.elementAt(i);
+        final ref = FirebaseFirestore.instance
+            .collection('Users')
+            .doc(auth.currentUser!.uid)
+            .collection('Tasks')
+            .doc(id);
+        batch.update(ref, {'Task Status': moveTo});
+      }
+      await batch.commit();
+      isSettingTask = false;
+      toSelectMultiple = false;
+      toSelectMList.clear();
+    } catch (e) {
+      isSettingTask = false;
+      toSelectMultiple = false;
+      toSelectMList.clear();
+      if (kDebugMode) print(e);
+    }
+    notifyListeners();
+  }
 
   void settingControllers() {
     taskTitleCont = TextEditingController();
@@ -162,11 +247,6 @@ class StateManagementProvider extends ChangeNotifier {
     loginPassword.clear();
   }
 
-  void movingToANDcategoryCleaner() {
-    if (movingTo != 'Not Set') movingTo = 'Not Set';
-    if (category != 'Not Set') category = 'Not Set';
-  }
-
   void movingToWhichStatus(String value) {
     movingTo = value;
     notifyListeners();
@@ -185,12 +265,18 @@ class StateManagementProvider extends ChangeNotifier {
   void creatingTaskOpeningFunc() {
     if (taskCategory != 'Not Set') taskCategory = 'Not Set';
     if (taskStatus != 'Not Set') taskStatus = 'Not Set';
+    if (categoryInd != 0) categoryInd = 0;
+    if (indChange != 0) indChange = 0;
   }
 
   // Continueing the New Phase of bringing the Firebase
   void selectedTaskStatus(String statusName) {
-    taskStatus = statusName;
-    notifyListeners();
+    if (taskStatus == statusName) {
+      if (kDebugMode) print('same type');
+    } else {
+      taskStatus = statusName;
+      notifyListeners();
+    }
   }
 
   void selectedCategoryStatus(String categoryName) {
@@ -204,6 +290,7 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   void settingTheCompletionDate(DateTime dt) {
+    if (kDebugMode) print(dt);
     completionDate = dt;
     formattedCompletionDate = DateFormat('MMMM dd, yyy').format(completionDate);
     notifyListeners();
@@ -338,26 +425,25 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   // Making the Function for moving the tasks for one list to another
-  Future<void> taskMovingBetweenLists(String id) async {
-    if (movingTo != 'Not Set') {
-      try {
-        isSettingTask = true;
-        notifyListeners();
-        if (movingTo != 'Not Set') {
-          await firestore
-              .collection('Users')
-              .doc(auth.currentUser!.uid)
-              .collection('Tasks')
-              .doc(id)
-              .update({"Task Status": movingTo, "Category Name": category})
-              .timeout(Duration(seconds: 10));
-          movingToANDcategoryCleaner();
-          isSettingTask = false;
-        }
-      } catch (e) {
-        isSettingTask = false;
-        if (kDebugMode) print(e);
-      }
+  Future<void> taskMovingBetweenLists(
+    String id,
+    String moveTo,
+    String cate,
+  ) async {
+    try {
+      isSettingTask = true;
+      notifyListeners();
+      await firestore
+          .collection('Users')
+          .doc(auth.currentUser!.uid)
+          .collection('Tasks')
+          .doc(id)
+          .update({"Task Status": moveTo, "Category Name": cate})
+          .timeout(Duration(seconds: 10));
+      isSettingTask = false;
+    } catch (e) {
+      isSettingTask = false;
+      if (kDebugMode) print(e);
     }
     notifyListeners();
   }
