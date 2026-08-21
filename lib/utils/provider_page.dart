@@ -31,16 +31,26 @@ class StateManagementProvider extends ChangeNotifier {
   TextEditingController signUpUserName = TextEditingController();
   TextEditingController signUpEmail = TextEditingController();
   TextEditingController signUpPassword = TextEditingController();
+  TextEditingController categoryCon = TextEditingController();
   TextEditingController? taskTitleCont;
   TextEditingController? descCont;
-  Stream? categoriesStream;
+  Stream? myCategoriesSteam;
 
   // all new made variables and their used function on top
   int indChange = 0;
+  int categoryPgBtnInd = 0;
   int categoryInd = 0;
   bool toSelectMultiple = false;
   bool editDetailsPage = false;
   Set<String> toSelectMList = {};
+  int colorInd = 0;
+
+  void changeColorInd(int ind) {
+    if (colorInd != ind) {
+      colorInd = ind;
+      notifyListeners();
+    }
+  }
 
   void changeInd(int ind) {
     if (indChange == ind) {
@@ -60,9 +70,22 @@ class StateManagementProvider extends ChangeNotifier {
     }
   }
 
-  void allowMutlipleSelect() {
-    toSelectMultiple = true;
+  void catePgBtnIndChg(int ind) {
+    categoryPgBtnInd = ind;
     notifyListeners();
+  }
+
+  void resetCatePgBtnInd() {
+    if (categoryPgBtnInd != 0) {
+      categoryPgBtnInd = 0;
+    }
+  }
+
+  void allowMutlipleSelect() {
+    if (!toSelectMultiple) {
+      toSelectMultiple = true;
+      notifyListeners();
+    }
   }
 
   void cancelMultipleAllow() {
@@ -77,8 +100,8 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   void disallowEditDetailsPg() {
-    editDetailsPage = false;   
-    notifyListeners();     
+    editDetailsPage = false;
+    notifyListeners();
   }
 
   void addingMultipleItems(String taskId) {
@@ -107,16 +130,40 @@ class StateManagementProvider extends ChangeNotifier {
         batch.update(ref, {'Task Status': moveTo});
       }
       await batch.commit();
-      isSettingTask = false;
-      toSelectMultiple = false;
-      toSelectMList.clear();
     } catch (e) {
+      if (kDebugMode) print(e);
+    } finally {
       isSettingTask = false;
       toSelectMultiple = false;
       toSelectMList.clear();
-      if (kDebugMode) print(e);
+      notifyListeners();
     }
+  }
+
+  Future<void> deletingMultipleTasks() async {
+    if (toSelectMList.isEmpty) return;
+    isSettingTask = true;
     notifyListeners();
+    try {
+      final batch = FirebaseFirestore.instance.batch();
+      for (int i = 0; i < toSelectMList.length; i++) {
+        final id = toSelectMList.elementAt(i);
+        final ref = FirebaseFirestore.instance
+            .collection('Users')
+            .doc(auth.currentUser!.uid)
+            .collection('Tasks')
+            .doc(id);
+        batch.delete(ref);
+      }
+      await batch.commit();
+    } catch (e) {
+      if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      toSelectMultiple = false;
+      toSelectMList.clear();
+      notifyListeners();
+    }
   }
 
   void settingControllers() {
@@ -247,21 +294,6 @@ class StateManagementProvider extends ChangeNotifier {
     loginPassword.clear();
   }
 
-  void movingToWhichStatus(String value) {
-    movingTo = value;
-    notifyListeners();
-  }
-
-  void movingToWhichCategory(int index, String value) {
-    category = value;
-    notifyListeners();
-  }
-
-  void cancelButtonAction() {
-    taskTitleCont!.clear();
-    descCont!.clear();
-  }
-
   void creatingTaskOpeningFunc() {
     if (taskCategory != 'Not Set') taskCategory = 'Not Set';
     if (taskStatus != 'Not Set') taskStatus = 'Not Set';
@@ -348,9 +380,14 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   // Making the function for the creation of the Category
-  Future<void> categoryCreation(TextEditingController categoryName) async {
+  Future<void> categoryCreation(int color, BuildContext cnt) async {
     try {
-      if (categoryName.text.isNotEmpty && categoryName.text.length <= 11) {
+      final String name = categoryCon.text.trim();
+      if (name.isNotEmpty &&
+          name != 'Pending' &&
+          name != 'Completed' &&
+          name != 'Deleted' &&
+          name.length < 14) {
         isSettingTask = true;
         notifyListeners();
         await FirebaseFirestore.instance
@@ -358,24 +395,23 @@ class StateManagementProvider extends ChangeNotifier {
             .doc(auth.currentUser!.uid)
             .collection('Categories')
             .doc()
-            .set({"Category Name": categoryName.text.trim()});
-        isSettingTask = false;
-      } else {
-        if (kDebugMode) print('Lenght is greater than mentioned');
-        isSettingTask = false;
+            .set({"Category Name": name, "color": color});
       }
     } catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      colorInd = 0;
+      categoryCon.clear();
+      if (cnt.mounted) {
+        Navigator.pop(cnt);
+      }
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  Stream givingStreamOfCategoryPage(
-    String categoryName,
-    String taskStatusType,
-  ) {
-    return firestore
+  void givingStreamOfCategoryPage(String categoryName, String taskStatusType) {
+    myCategoriesSteam = firestore
         .collection('Users')
         .doc(auth.currentUser!.uid)
         .collection('Tasks')
@@ -384,29 +420,7 @@ class StateManagementProvider extends ChangeNotifier {
         .snapshots();
   }
 
-  // Now making the function for the changing of the Stream based
-
-  // Making the one function for the working of the deleting the Tasks
-  Future<void> taskDeletion(String id) async {
-    try {
-      isSettingTask = true;
-      notifyListeners();
-      await firestore
-          .collection('Users')
-          .doc(auth.currentUser!.uid)
-          .collection('Tasks')
-          .doc(id)
-          .delete()
-          .timeout(Duration(seconds: 10));
-      isSettingTask = false;
-    } catch (e) {
-      isSettingTask = false;
-      if (kDebugMode) print(e);
-    }
-    notifyListeners();
-  }
-
-  Future<void> categoryDeletion(String id) async {
+  Future<void> categoryDeletion(String id, BuildContext cnt) async {
     try {
       isSettingTask = true;
       notifyListeners();
@@ -416,12 +430,44 @@ class StateManagementProvider extends ChangeNotifier {
           .collection('Categories')
           .doc(id)
           .delete();
-      isSettingTask = false;
     } catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      notifyListeners();
+      if (cnt.mounted) {
+        Navigator.pop(cnt);
+      }
     }
-    notifyListeners();
+  }
+
+  Future<void> editCategoryName(String id, int color, BuildContext con) async {
+    try {
+      final name = categoryCon.text.trim();
+      if (name.isNotEmpty &&
+          name != 'Pending' &&
+          name != 'Completed' &&
+          name != 'Deleted' &&
+          name.length < 14) {
+        isSettingTask = true;
+        notifyListeners();
+        await FirebaseFirestore.instance
+            .collection('Users')
+            .doc(auth.currentUser!.uid)
+            .collection('Categories')
+            .doc(id)
+            .update({"Category Name": name, "color": color});
+      }
+    } catch (e) {
+      if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      categoryCon.clear();
+      notifyListeners();
+      if (con.mounted) {
+        Navigator.pop(con);
+      }
+    }
   }
 
   // Making the Function for moving the tasks for one list to another
@@ -509,12 +555,21 @@ class StateManagementProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void makingComDateEmpty() {
+    taskCompletionDate = '';
+    editDetailsPage = false;
+  }
+
   // // Now here making the function that will update and send data to firebase
   void assigningTaskCompletionDateOnPageAppearing(String date) {
     taskCompletionDate = date;
   }
 
-  Future<void> pushingUpdatedData(String taskId, BuildContext context) async {
+  Future<void> pushingUpdatedData(
+    String taskId,
+    BuildContext context,
+    String dt,
+  ) async {
     final bar = ScaffoldMessenger.of(context);
     try {
       if (newTitleController.text.trim().isNotEmpty) {
@@ -525,18 +580,19 @@ class StateManagementProvider extends ChangeNotifier {
             .doc(auth.currentUser!.uid)
             .collection('Tasks')
             .doc(taskId)
-            .update({
+            .set({
               "Task Title": newTitleController.text.trim(),
               "Task Description": newDescritionController.text.trim().isNotEmpty
                   ? newDescritionController.text.trim()
                   : 'No description Provided',
-              "Completion Date":
-                  (taskCompletionDate == 'No completion date set')
-                  ? 'No completion date set'
+              "Completion Date": taskCompletionDate == ''
+                  ? dt
                   : taskCompletionDate,
-            });
+              "Last edited": Timestamp.fromDate(DateTime.now()),
+            }, SetOptions(merge: true));
         isSettingTask = false;
         taskCompletionDate = '';
+        editDetailsPage = false;
         if (!context.mounted) return;
         Navigator.of(context).pop();
       } else {
@@ -567,28 +623,6 @@ class StateManagementProvider extends ChangeNotifier {
         if (kDebugMode) print('Controller is Empty');
         isSettingTask = false;
       }
-    } catch (e) {
-      isSettingTask = false;
-      if (kDebugMode) print(e);
-    }
-    notifyListeners();
-  }
-
-  // Now making the function for the deletion page
-  Future<void> movingTaskToDeletedCategory(String taskID) async {
-    try {
-      isSettingTask = true;
-      notifyListeners();
-      await firestore
-          .collection('Users')
-          .doc(auth.currentUser!.uid)
-          .collection('Tasks')
-          .doc(taskID)
-          .update({"Task Status": 'Deleted'})
-          .timeout(Duration(seconds: 10));
-      await helperOfPendingCompletedLength();
-      if (kDebugMode) print('The task is sent to deleted successfully');
-      isSettingTask = false;
     } catch (e) {
       isSettingTask = false;
       if (kDebugMode) print(e);

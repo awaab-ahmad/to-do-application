@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/utils/global_items.dart';
 import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/reusables.dart/field_borders.dart';
 import 'package:to_do_app/utils/reusables.dart/snack_bar.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
@@ -117,8 +119,8 @@ Container userNameChangingBottomSheet(
                 13,
                 FontWeight.w600,
               ),
-              focusedBorder: focusedBorders,
-              enabledBorder: enabledBorder,
+              focusedBorder: focusB,
+              enabledBorder: enabledB,
             ),
           ),
           const Expanded(child: SizedBox()),
@@ -164,93 +166,228 @@ Container userNameChangingBottomSheet(
   );
 }
 
-// This bottom sheet is used for Creating our own category
-Container categoryCreatingBottomSheet(
-  double w,
-  double h,
-  BuildContext context,
-  TextEditingController controller,
-  Future<void> Function() func,
-) {
-  final buttonStyle = ElevatedButton.styleFrom(
-    overlayColor: const Color(0xff000000),
-    shape: mainRadius,
-    padding: const EdgeInsets.symmetric(vertical: 05),
-    backgroundColor: const Color(0xFFFFB74D),
-    fixedSize: Size(w * 0.3, h * 0.06),
-  );
-  return Container(
-    height: h * 0.23,
-    width: w * 1.0,
-    decoration: BoxDecoration(
-      color: const Color(0xFFFFF9F0),
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      child: Column(
-        crossAxisAlignment: .center,
-        children: [
-          const SizedBox(height: 05),
-          SizedBox(
-            height: 15,
-            width: 70,
-            child: Card(color: const Color(0xFF000000)),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: controller,
-            autofocus: true,
-            cursorColor: const Color(0xFF000000),
-            style: styleOnly(Colors.black, 12, FontWeight.w600),
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.symmetric(
-                vertical: 02,
-                horizontal: 08,
-              ),
-              focusedBorder: focusedBorders,
-              enabledBorder: enabledBorder,
-              hintText: 'Enter Category Name',
-              hintStyle: styleOnly(Colors.black, 12, FontWeight.w600),
-            ),
-          ),
-          const Expanded(child: SizedBox()),
-          Row(
-            mainAxisAlignment: .end,
-            children: [
-              ElevatedButton(
-                style: buttonStyle,
-                onPressed: () {
-                  controller.clear();
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Cancel', style: Style.black13),
-              ),
-              const SizedBox(width: 10),
-              context.watch<StateManagementProvider>().isSettingTask == true
-                  ? SizedBox(
-                      height: h * 0.06,
-                      width: w * 0.3,
-                      child: Center(child: const GlobalIndicator()),
-                    )
-                  : ElevatedButton(
-                      style: buttonStyle,
-                      onPressed: () async {
-                        await func();
-                        controller.clear();
-                        if (!context.mounted) return;
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Create', style: Style.black13),
-                    ),
-            ],
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    ),
+Future sheet(BuildContext context, Widget child) async {
+  return showModalBottomSheet(
+    useSafeArea: true,
+    isScrollControlled: true,
+    context: context,
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: child,
+      );
+    },
   );
 }
+
+class CategoryRelatedSheet extends StatelessWidget {
+  final String? id;
+  final String title;
+  final TextEditingController controller;
+  final bool deletable;
+  const CategoryRelatedSheet({
+    super.key,
+    this.id,
+    required this.title,
+    required this.controller,
+    required this.deletable,
+  });
+
+  static const List<Color> colors = [
+    Color(0xFFE8A268),
+    Color(0xFF4A6B6B),
+    Color(0xFF0F6E56),
+    Color(0xFF7D6BC4),
+    Color(0xFFC0574F),
+    Color(0xFFB9722E),
+  ];
+
+  static ButtonStyle stl(Color bg, Color bor) {
+    return ElevatedButton.styleFrom(
+      elevation: 0,
+      padding: const .symmetric(vertical: 15),
+      shape: RoundedRectangleBorder(borderRadius: .circular(12)),
+      backgroundColor: bg,
+      side: BorderSide(color: bor, width: 1.4),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final sz = MediaQuery.sizeOf(context);
+    final c = Theme.of(context).colorScheme;
+    return Container(
+      height: sz.height * 0.45,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF9F0),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Column(
+          crossAxisAlignment: .start,
+          children: [
+            const SizedBox(height: 10),
+            Center(
+              child: SizedBox(
+                height: 10,
+                width: 60,
+                child: Card(margin: .zero, color: c.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: .spaceBetween,
+              children: [
+                Text(title, style: Style.blc17Light),
+                Selector<StateManagementProvider, bool>(
+                  selector: (_, pro) => pro.isSettingTask,
+                  builder: (_, allowed, _) {
+                    if (allowed) {
+                      return SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: const GlobalIndicator(),
+                      );
+                    }
+                    if (deletable) {
+                      return IconButton(
+                        onPressed: () async {
+                          final p = context.read<StateManagementProvider>();
+                          await p.categoryDeletion(id!, context);
+                        },
+                        icon: Icon(Icons.delete),
+                      );
+                    }
+                    return SizedBox.shrink();
+                  },
+                ),
+              ],
+            ),
+            const Text('Category Name', style: Style.gry12),
+            const SizedBox(height: 5),
+            TextField(
+              controller: controller,
+              style: Style.mutedGry13,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: c.onSecondary,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 08,
+                ),
+                focusedBorder: focusB,
+                enabledBorder: enabledB,
+                hintText: 'e.g. Programming',
+                hintStyle: Style.mutedGry11,
+              ),
+            ),
+            const SizedBox(height: 5),
+            const Text('Choose the color', style: Style.gry12),
+            SizedBox(
+              height: sz.height * 0.08,
+              child: ListView.builder(
+                scrollDirection: .horizontal,
+                itemCount: colors.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      final p = context.read<StateManagementProvider>();
+                      p.changeColorInd(index);
+                    },
+                    child: Selector<StateManagementProvider, int>(
+                      selector: (_, pro) => pro.colorInd,
+                      builder: (_, indx, _) {
+                        final selected = indx == index;
+                        return Container(
+                          margin: .symmetric(horizontal: 3),
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            border: BoxBorder.all(
+                              width: 1.7,
+                              color: selected ? c.secondary : colors[index],
+                            ),
+                            color: colors[index],
+                            shape: .circle,
+                          ),
+                          child: selected
+                              ? Icon(Icons.check, size: 30, color: c.surface)
+                              : SizedBox.shrink(),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: stl(c.onSecondary, c.onPrimaryFixed),
+                    onPressed: () {
+                      controller.clear();
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel', style: Style.black13),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Selector<StateManagementProvider, bool>(
+                    selector: (_, pro) => pro.isSettingTask,
+                    builder: (_, allowed, _) => ElevatedButton(
+                      style: stl(c.primary, c.primary),
+                      onPressed: () async {
+                        final p = context.read<StateManagementProvider>();
+                        final color = colors[p.colorInd].toARGB32();
+                        if (deletable) {
+                          await p.editCategoryName(id!, color, context);
+                        } else {
+                          !allowed
+                              ? () async {
+                                  await p.categoryCreation(color, context);
+                                }
+                              : null;
+                        }
+                      },
+                      child: Text(
+                        deletable ? 'Save' : 'Create',
+                        style: Style.black13,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// This bottom sheet is used for Creating our own category
+// Container categoryCreatingBottomSheet(
+//   double w,
+//   double h,
+//   BuildContext context,
+//   TextEditingController controller,
+//   Future<void> Function() func,
+// ) {
+//   final buttonStyle = ElevatedButton.styleFrom(
+//     overlayColor: const Color(0xff000000),
+//     shape: mainRadius,
+//     padding: const EdgeInsets.symmetric(vertical: 05),
+//     backgroundColor: const Color(0xFFFFB74D),
+//     fixedSize: Size(w * 0.3, h * 0.06),
+//   );
+  
+// }
 
 // This below bottom sheet for moving tasks from one section to others
 // class MovingTaskSheet extends StatelessWidget {

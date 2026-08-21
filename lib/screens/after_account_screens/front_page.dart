@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/screens/after_account_screens/creating_task_page.dart';
 import 'package:to_do_app/screens/after_account_screens/manage_account.dart';
 import 'package:to_do_app/utils/alert_dialog.dart';
+import 'package:to_do_app/utils/bottom_sheets.dart';
 import 'package:to_do_app/utils/global_items.dart';
 import 'package:to_do_app/utils/navigator.dart';
 import 'package:to_do_app/utils/provider_page.dart';
@@ -28,8 +30,6 @@ class _FrontPageState extends State<FrontPage> {
 
   @override
   Widget build(BuildContext context) {
-    final sz = MediaQuery.sizeOf(context);
-    final c = Theme.of(context).colorScheme;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -38,7 +38,12 @@ class _FrontPageState extends State<FrontPage> {
             crossAxisAlignment: .start,
             children: [
               const Text('Good to see you here!', style: Style.gry14),
-              const Text('Hi, Awaab Ahmad Minhas', style: Style.blc14),
+              Selector<StateManagementProvider, String?>(
+                selector: (_, pro) => pro.auth.currentUser!.displayName,
+                builder: (context, user, child) {
+                  return Text('Hi, $user', style: Style.blc14);
+                },
+              ),
               const SizedBox(height: 15),
               const _MainCategories(),
               const SizedBox(height: 10),
@@ -118,11 +123,7 @@ class _MainCategories extends StatelessWidget {
                 mainAxisAlignment: .center,
                 crossAxisAlignment: .start,
                 children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: c.tertiary,
-                    size: 35,
-                  ),
+                  Icon(Icons.check_circle_outline, color: c.tertiary, size: 35),
                   const SizedBox(height: 10),
                   Selector<StateManagementProvider, int>(
                     selector: (_, pro) => pro.completedTasks,
@@ -205,8 +206,22 @@ class _MainCategories extends StatelessWidget {
 class _MyCategories extends StatelessWidget {
   const _MyCategories();
 
+  static ButtonStyle stl() {
+    return ElevatedButton.styleFrom(
+      elevation: 0,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: const Color(0xFFD9D6C9), width: 1.6),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
     final sz = MediaQuery.sizeOf(context);
     return StreamBuilder(
       stream: context.read<StateManagementProvider>().streamFetching(),
@@ -225,7 +240,18 @@ class _MyCategories extends StatelessWidget {
               children: [
                 const Text('Categories', style: Style.black14),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    final p = context.read<StateManagementProvider>();
+                    final contro = p.categoryCon;
+                    sheet(
+                      context,
+                      CategoryRelatedSheet(
+                        title: 'New Category',
+                        controller: contro,
+                        deletable: false,
+                      ),
+                    );
+                  },
                   padding: .zero,
                   icon: Row(
                     children: [
@@ -237,7 +263,7 @@ class _MyCategories extends StatelessWidget {
               ],
             ),
             SizedBox(
-              height: sz.height * 0.06,
+              height: sz.height * 0.3,
               width: sz.width * 1.0,
               child: Card(
                 margin: const EdgeInsets.all(0),
@@ -245,28 +271,27 @@ class _MyCategories extends StatelessWidget {
                 shadowColor: const Color(0x00000000),
                 clipBehavior: .antiAlias,
                 child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
+                  scrollDirection: Axis.vertical,
                   itemCount: data.length,
                   itemBuilder: (context, index) {
+                    final ind = data[index];
+                    final cateName = ind['Category Name'];
+                    final hasColor = ind.data().containsKey('color');
+                    final color = hasColor ? Color(ind['color']) : c.primary;
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 03),
+                      padding: const EdgeInsets.symmetric(vertical: 5),
                       child: ElevatedButton(
                         onLongPress: () {
                           if (kDebugMode) print(data[index].id);
-                          showDialog(
-                            context: context,
-                            builder: (alertContext) => ModelAlertDialogs(
-                              alertDialogContext: alertContext,
-                              title: 'Want to remove this Category?',
-                              firstElevatedButtonTitle: 'No',
-                              secondElevatedButtonTitle: 'Yes',
-                              firstElevatedButtonFunc: () =>
-                                  Navigator.of(context).pop(),
-                              secondElevatedButtonFunc: () async {
-                                await context
-                                    .read<StateManagementProvider>()
-                                    .categoryDeletion(data[index].id);
-                              },
+                          final p = context.read<StateManagementProvider>();
+                          final contro = p.categoryCon;
+                          sheet(
+                            context,
+                            CategoryRelatedSheet(
+                              id: data[index].id,
+                              title: 'Edit category',
+                              controller: contro,
+                              deletable: true,
                             ),
                           );
                         },
@@ -275,34 +300,35 @@ class _MyCategories extends StatelessWidget {
                             print(
                               'The Name of this Page is: ${data[index]['Category Name']}',
                             );
+                            Navigator.of(context).push(
+                              navigate(
+                                ModelCategoryClass(
+                                  appBarTitle: data[index]['Category Name'],
+                                ),
+                              ),
+                            );
                           }
-                          // Navigator.of(context).push(
-                          //   navigate(
-                          //     ModelCategoryClass(
-                          //       appBarTitle: data[index]['Category Name'],
-                          //       taskTypeTitle:
-                          //           '${data[index]['Category Name']} Tasks',
-                          //     ),
-                          //   ),
-                          // );
                         },
-                        style: ElevatedButton.styleFrom(
-                          overlayColor: const Color(0xFF000000),
-                          fixedSize: Size(sz.width * 0.4, sz.height * 0.035),
-                          alignment: Alignment.centerLeft,
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          backgroundColor: const Color(0xFFF3DEBC),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            side: BorderSide(
-                              color: const Color(0xFF000000),
-                              width: 1.4,
+                        style: stl(),
+                        child: Row(
+                          children: [
+                            Container(
+                              height: 8,
+                              width: 8,
+                              decoration: BoxDecoration(
+                                shape: .circle,
+                                color: color,
+                              ),
                             ),
-                          ),
-                        ),
-                        child: Text(
-                          data[index]['Category Name'],
-                          style: Style.black15,
+                            const SizedBox(width: 10),
+                            Text(cateName, style: Style.black15),
+                            const Expanded(child: SizedBox()),
+                            Icon(
+                              Icons.keyboard_arrow_right_rounded,
+                              size: 25,
+                              color: c.onSurface,
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -338,9 +364,8 @@ class _DeletedButton extends StatelessWidget {
         children: [
           Icon(Icons.delete, color: c.error, size: 35),
           const SizedBox(width: 10),
-          const Text('Deleted Tasks', style: Style.blc14),
+          const Text('Recently deleted', style: Style.blc14),
           const Expanded(child: SizedBox()),
-          const Text('0', style: Style.gry14),
           Icon(Icons.keyboard_arrow_right, color: c.onSurface, size: 25),
         ],
       ),

@@ -14,6 +14,7 @@ class TaskDetailsPage extends StatefulWidget {
   final String category;
   final String completionDate;
   final String status;
+  final String lastEdited;
 
   const TaskDetailsPage({
     super.key,
@@ -24,6 +25,7 @@ class TaskDetailsPage extends StatefulWidget {
     required this.category,
     required this.completionDate,
     required this.status,
+    required this.lastEdited,
   });
 
   @override
@@ -34,6 +36,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
   @override
   void initState() {
     super.initState();
+    context.read<StateManagementProvider>().makingComDateEmpty();
   }
 
   @override
@@ -72,9 +75,15 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                     const SizedBox(height: 10),
                     _DueDateButton(date: widget.completionDate),
                     const SizedBox(height: 5),
-                    _TimeLineBox(date: widget.date),
+                    _TimeLineBox(
+                      date: widget.date,
+                      lastEdit: widget.lastEdited,
+                    ),
                     const Expanded(child: SizedBox()),
-                    const _LastButtons(),
+                    _LastButtons(
+                      taskId: widget.taskId,
+                      comDate: widget.completionDate,
+                    ),
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -142,10 +151,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
 }
 
 class _TopContainer extends StatelessWidget {
-  final String title;
-  final String category;
-  final String desc;
-  final String status;
+  final String title, category, desc, status;
   const _TopContainer({
     required this.title,
     required this.category,
@@ -179,10 +185,9 @@ class _TopContainer extends StatelessWidget {
                   size: 40,
                 ),
               ),
-              Selector<StateManagementProvider, bool>(
-                selector: (_, pro) => pro.editDetailsPage,
-                builder: (_, allowed, _) {
-                  if (!allowed) {
+              Consumer<StateManagementProvider>(
+                builder: (_, pro, _) {
+                  if (!pro.editDetailsPage) {
                     return IconButton(
                       onPressed: () {
                         final p = context.read<StateManagementProvider>();
@@ -191,6 +196,18 @@ class _TopContainer extends StatelessWidget {
                       },
                       padding: .zero,
                       icon: Icon(Icons.edit, color: c.onSecondary, size: 25),
+                    );
+                  }
+                  if (pro.isSettingTask) {
+                    return SizedBox(
+                      height: 26,
+                      width: 26,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 5,
+                          color: c.onSecondary,
+                        ),
+                      ),
                     );
                   }
                   return const SizedBox.shrink();
@@ -378,9 +395,19 @@ class _DueDateButton extends StatelessWidget {
                 children: [
                   const Text('Due date', style: Style.gry10),
                   const SizedBox(height: 4),
-                  Text(
-                    date != 'No completion date set' ? date : 'No date yet',
-                    style: Style.blc11,
+                  Selector<StateManagementProvider, String>(
+                    selector: (_, pro) => pro.taskCompletionDate,
+                    builder: (context, comDate, child) {
+                      if (comDate == '') {
+                        return Text(
+                          date != 'No completion date set'
+                              ? date
+                              : 'No date yet',
+                          style: Style.blc11,
+                        );
+                      }
+                      return Text('Change to: $comDate', style: Style.blc11);
+                    },
                   ),
                 ],
               ),
@@ -400,7 +427,8 @@ class _DueDateButton extends StatelessWidget {
 
 class _TimeLineBox extends StatelessWidget {
   final String date;
-  const _TimeLineBox({required this.date});
+  final String lastEdit;
+  const _TimeLineBox({required this.date, required this.lastEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -431,7 +459,7 @@ class _TimeLineBox extends StatelessWidget {
                       children: [
                         SizedBox(height: 8, width: 8),
                         const SizedBox(width: 10),
-                        Text('No date yet', style: Style.gry10),
+                        Text(lastEdit, style: Style.gry10),
                       ],
                     ),
                   ],
@@ -497,7 +525,9 @@ class _TimeLineReused extends StatelessWidget {
 }
 
 class _LastButtons extends StatelessWidget {
-  const _LastButtons();
+  final String taskId;
+  final String comDate;
+  const _LastButtons({required this.taskId, required this.comDate});
 
   static ButtonStyle btnStl(Color bg, Color bor) {
     return ElevatedButton.styleFrom(
@@ -523,6 +553,7 @@ class _LastButtons extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     p.disallowEditDetailsPg();
+                    p.makingComDateEmpty();
                   },
                   style: btnStl(c.onSecondary, c.onPrimaryFixed),
                   child: const Text('Cancel', style: Style.blc11),
@@ -531,7 +562,9 @@ class _LastButtons extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await p.pushingUpdatedData(taskId, context, comDate);
+                  },
                   style: btnStl(c.primary, c.primary),
                   child: const Text('Save changes', style: Style.blc11),
                 ),
