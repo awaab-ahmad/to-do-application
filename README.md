@@ -1,16 +1,18 @@
-# to_do_app
+# Task Me
 
-A new Flutter project.
+📝 A Simple Task application for managing daily tasks to demonstrate the working of latest Android Development Tools - (Flutter, Dart, Firebase, Local Storage and more). Made by awaab_ahmad
 
-## Getting Started
+## Features: 
 
-This project is a starting point for a Flutter application.
+Task Me uses Firebase for:
+- Handling Accounts
+- Managing tasks
+- Making your fully customizable categories to save tasks in
+- Selection of multiple tasks for marking between pending and Completed
+- Restoring recently deleted tasks or permanently removing them
+- Setting up your completion date
+- Viewing your tasks and changing their details
+- Clean and Minimal UI with least chances of errors
+ 
+## Screenshots:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
