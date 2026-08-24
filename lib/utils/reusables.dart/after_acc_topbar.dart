@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class AfterAccTopBar extends StatelessWidget {
@@ -51,12 +51,12 @@ class AfterAccTopBar extends StatelessWidget {
           builder: (_, toShow, _) {
             if (toShow) {
               return SizedBox(
-                height: 30,
-                width: 30,
+                height: 25,
+                width: 25,
                 child: Center(
                   child: CircularProgressIndicator(
                     color: c.secondary,
-                    strokeWidth: 6,
+                    strokeWidth: 5,
                   ),
                 ),
               );

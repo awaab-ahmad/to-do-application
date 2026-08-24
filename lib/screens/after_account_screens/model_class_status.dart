@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/utils/reusables.dart/after_acc_topbar.dart';
 import 'package:to_do_app/utils/reusables.dart/tasks_related.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
@@ -59,18 +59,21 @@ class _TopBar extends StatelessWidget {
     return Selector<StateManagementProvider, bool>(
       selector: (_, pro) => pro.toSelectMultiple,
       builder: (context, allowed, child) {
-        if (allowed) {
-          return _MoreOptionsBox(appBarTitle: appBarTitle);
-        }
-        return Selector<StateManagementProvider, int>(
-          selector: (_, pro) => isPen ? pro.pendingTasks : pro.completedTasks,
-          builder: (_, length, _) => AfterAccTopBar(
-            title: appBarTitle,
-            subTitle: appBarTitle != 'Deleted'
-                ? '$length Tasks'
-                : 'Manage Recently deleted',
-            extra: () {},
-          ),
+        return AnimatedSwitcher(          
+          duration: Duration(milliseconds: 600),
+          child: allowed
+              ? _MoreOptionsBox(appBarTitle: appBarTitle)
+              : Selector<StateManagementProvider, int>(
+                  selector: (_, pro) =>
+                      isPen ? pro.pendingTasks : pro.completedTasks,
+                  builder: (_, length, _) => AfterAccTopBar(
+                    title: appBarTitle,
+                    subTitle: appBarTitle != 'Deleted'
+                        ? '$length Tasks'
+                        : 'Manage Recently deleted',
+                    extra: () {},
+                  ),
+                ),
         );
       },
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/utils/provider_page.dart';
-import 'package:to_do_app/utils/global_items.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/utils/reusables.dart/after_acc_topbar.dart';
 import 'package:to_do_app/utils/reusables.dart/field_borders.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class TaskCreationPage extends StatefulWidget {
@@ -61,7 +61,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
               const _CompletionDateBtn(),
               const Expanded(child: SizedBox.shrink()),
               const _AddTaskBtn(),
-                  //  p.cancelButtonAction();
               const SizedBox(height: 04),
             ],
           ),
@@ -176,6 +175,15 @@ class _AddToButtons extends StatelessWidget {
 class _Categories extends StatelessWidget {
   const _Categories();
 
+  static ButtonStyle style(Color bor, Color bg) {
+    return ElevatedButton.styleFrom(
+      elevation: 0,
+      side: BorderSide(color: bor, width: 1.5),
+      backgroundColor: bg,
+      shape: RoundedRectangleBorder(borderRadius: .circular(15)),
+    );
+  }
+
   @override
   Widget build(BuildContext cnt) {
     final c = Theme.of(cnt).colorScheme;
@@ -188,7 +196,7 @@ class _Categories extends StatelessWidget {
         } else if (!snaps.hasData || snaps.data!.docs.isEmpty) {
           return SizedBox.shrink();
         }
-        final data = snaps.data!.docs;
+        final data = snaps.data?.docs;
         return SizedBox(
           height: sz.height * 0.055,
           width: double.maxFinite,
@@ -199,33 +207,51 @@ class _Categories extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 0),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              itemCount: data.length,
+              itemCount: data.length + 1,
               itemBuilder: (context, index) {
-                final indData = data[index];
-                final hasColor = indData.data().containsKey('color');
+                final pro = context.read<StateManagementProvider>();
+                if (index == 0) {
+                  return Selector<StateManagementProvider, int>(
+                    selector: (_, pro) => pro.categoryInd,
+                    builder: (context, indx, child) {
+                      final same = indx == -1;
+                      return ElevatedButton(
+                        onPressed: () {
+                          pro.changeCategoryInd(-1);
+                          pro.selectedCategoryStatus('No category');
+                        },
+                        style: style(
+                          same ? c.secondary : c.onPrimaryFixed,
+                          same ? c.secondary : c.onSecondary,
+                        ),
+                        child: Text(
+                          'No category',
+                          style: indx == -1 ? Style.wht14 : Style.blc14,
+                        ),
+                      );
+                    },
+                  );
+                }
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 03),
                   child: Selector<StateManagementProvider, int>(
                     selector: (_, p) => p.categoryInd,
                     builder: (context, cateInd, child) {
+                      final indData = data[index - 1];
+                      final hasColor = indData.data().containsKey('color');
+                      final color = hasColor
+                          ? Color(indData['color'])
+                          : c.primary;
                       final selected = cateInd == index;
-                      final pro = context.read<StateManagementProvider>();
                       return ElevatedButton(
                         onLongPress: () => pro.resetCategorySelected(),
                         onPressed: () async {
                           pro.changeCategoryInd(index);
                           pro.selectedCategoryStatus(indData['Category Name']);
                         },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          side: BorderSide(
-                            color: selected ? c.secondary : c.onPrimaryFixed,
-                            width: 1.5,
-                          ),
-                          backgroundColor: selected
-                              ? c.secondary
-                              : c.onSecondary,
-                          shape: mainRadius,
+                        style: style(
+                          selected ? c.secondary : c.onPrimaryFixed,
+                          selected ? c.secondary : c.onSecondary,
                         ),
                         child: Row(
                           children: [
@@ -234,12 +260,12 @@ class _Categories extends StatelessWidget {
                               width: 10,
                               decoration: BoxDecoration(
                                 shape: .circle,
-                                color: hasColor ? c.tertiaryFixed : c.primary,
+                                color: color,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              data[index]['Category Name'],
+                              indData['Category Name'],
                               style: selected ? Style.wht14 : Style.blc14,
                             ),
                           ],
@@ -334,18 +360,19 @@ class _AddTaskBtn extends StatelessWidget {
     return Selector<StateManagementProvider, bool>(
       selector: (_, pro) => pro.isSettingTask,
       builder: (_, isTrue, _) {
-        if (isTrue) {
-          return const GlobalIndicator();
-        }
         return ElevatedButton(
           onPressed: () async {
-            final p = context.read<StateManagementProvider>();
-            p.taskCreationFunction(context);
-            await p.helperOfPendingCompletedLength();
+            if (!isTrue) {
+              final p = context.read<StateManagementProvider>();
+              p.taskCreationFunction(context);
+              await p.helperOfPendingCompletedLength();
+            }
           },
           style: ElevatedButton.styleFrom(
             shape: RoundedRectangleBorder(borderRadius: .circular(15)),
-            backgroundColor: c.primary, fixedSize: Size(double.maxFinite, 50)),
+            backgroundColor: c.primary,
+            fixedSize: Size(double.maxFinite, 50),
+          ),
           child: const Text('Add task', style: Style.blc14),
         );
       },

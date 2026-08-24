@@ -156,13 +156,6 @@ class Style {
     fontSize: 14,
     fontWeight: .w500,
   );
-
-  static const white16 = TextStyle(
-    fontFamily: 'Poppins',
-    color: Color(0xFFffffff),
-    fontSize: 16,
-    fontWeight: .w600,
-  );
   
   static const blc10 = TextStyle(
     fontFamily: 'Poppins',

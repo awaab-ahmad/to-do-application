@@ -12,12 +12,11 @@ import 'package:to_do_app/screens/before_account_screens/login.dart';
 
 class StateManagementProvider extends ChangeNotifier {
   bool isSettingTask = false;
+  bool inSheetLoading = false;
   DateTime completionDate = DateTime.now();
   String formattedCompletionDate = 'Not Set';
   String taskStatus = 'Not Set';
   String taskCategory = 'Not Set';
-  String movingTo = 'Not Set';
-  String category = 'Not Set';
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   int pendingTasks = 0;
@@ -68,6 +67,10 @@ class StateManagementProvider extends ChangeNotifier {
       categoryInd = ind;
       notifyListeners();
     }
+  }
+
+  void newCateName(String cate) {
+    taskCategory = cate;
   }
 
   void catePgBtnIndChg(int ind) {
@@ -224,9 +227,7 @@ class StateManagementProvider extends ChangeNotifier {
         );
         bar.showSnackBar(globalBar('Login To Continue'));
       }
-      isSettingTask = false;
     } on FirebaseAuthException catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e.code);
       switch (e.code) {
         case 'invalid-email':
@@ -244,9 +245,11 @@ class StateManagementProvider extends ChangeNotifier {
         default:
           bar.showSnackBar(globalBar('Error, Try again later'));
       }
+    } finally {
+      isSettingTask = false;
+      textEditingControllersCleaner();
+      notifyListeners();
     }
-    textEditingControllersCleaner();
-    notifyListeners();
   }
 
   Future<void> loginFunction(BuildContext context) async {
@@ -265,9 +268,7 @@ class StateManagementProvider extends ChangeNotifier {
         MaterialPageRoute(builder: (context) => FrontPage()),
         (Route<dynamic> route) => false,
       );
-      isSettingTask = false;
     } on FirebaseAuthException catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e.code);
       switch (e.code) {
         case 'invalid-credential':
@@ -280,9 +281,11 @@ class StateManagementProvider extends ChangeNotifier {
           bar.showSnackBar(globalBar('Enter a valid email'));
           break;
       }
+    } finally {
+      isSettingTask = false;
+      textEditingControllersCleaner();
+      notifyListeners();
     }
-    textEditingControllersCleaner();
-    notifyListeners();
   }
 
   void textEditingControllersCleaner() {
@@ -295,10 +298,14 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   void creatingTaskOpeningFunc() {
-    if (taskCategory != 'Not Set') taskCategory = 'Not Set';
-    if (taskStatus != 'Not Set') taskStatus = 'Not Set';
-    if (categoryInd != 0) categoryInd = 0;
+    if (taskCategory != 'No category') taskCategory = 'No category';
+    if (taskStatus != 'Pending') taskStatus = 'Pending';
+    if (categoryInd != -1) categoryInd = -1;
     if (indChange != 0) indChange = 0;
+  }
+
+  void resetCategoryInd() {
+    if (categoryInd != -1) categoryInd = -1;
   }
 
   // Continueing the New Phase of bringing the Firebase
@@ -329,7 +336,6 @@ class StateManagementProvider extends ChangeNotifier {
   }
 
   Future<void> taskCreationFunction(BuildContext context) async {
-    final bar = ScaffoldMessenger.of(context);
     try {
       if (taskTitleCont!.text.trim().isNotEmpty) {
         if (taskStatus != 'Not Set') {
@@ -344,7 +350,9 @@ class StateManagementProvider extends ChangeNotifier {
               .doc()
               .set({
                 'Task Status': taskStatus,
-                'Category Name': taskCategory,
+                'Category Name': taskCategory == 'No category'
+                    ? 'Not Set'
+                    : taskCategory,
                 'Task Title': taskTitleCont!.text.trim(),
                 'Task Description': (descCont!.text.trim().isEmpty)
                     ? 'No description Provided'
@@ -355,28 +363,23 @@ class StateManagementProvider extends ChangeNotifier {
                     : formattedCompletionDate,
               })
               .timeout(Duration(seconds: 10));
-          if (!context.mounted) return;
-          bar.showSnackBar(globalBar('Task Created'));
-          if (!context.mounted) return;
-          Navigator.of(context).pop();
-          taskTitleCont!.clear();
-          descCont!.clear();
-          isSettingTask = false;
         } else {
-          isSettingTask = false;
           if (kDebugMode) print('Task Status is not set Properly');
         }
       } else {
         if (kDebugMode) print('The Title is Empty');
-        bar
-          ..removeCurrentSnackBar()
-          ..showSnackBar(globalBar('Title cannot be empty'));
       }
     } catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+      taskTitleCont!.clear();
+      descCont!.clear();
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   // Making the function for the creation of the Category
@@ -420,7 +423,7 @@ class StateManagementProvider extends ChangeNotifier {
         .snapshots();
   }
 
-  Future<void> categoryDeletion(String id, BuildContext cnt) async {
+  Future<void> categoryDeletion(String nm, String id, BuildContext cnt) async {
     try {
       isSettingTask = true;
       notifyListeners();
@@ -429,7 +432,20 @@ class StateManagementProvider extends ChangeNotifier {
           .doc(auth.currentUser!.uid)
           .collection('Categories')
           .doc(id)
-          .delete();
+          .delete()
+          .timeout(Duration(seconds: 10));
+      final btch = firestore.batch();
+      // making the working if categor got deleted, set its tasks to Not set
+      final query = await firestore
+          .collection('Users')
+          .doc(auth.currentUser!.uid)
+          .collection('Tasks')
+          .where('Category Name', isEqualTo: nm)
+          .get();
+      for (var doc in query.docs) {
+        btch.update(doc.reference, {'Category Name': 'Not Set'});
+      }
+      btch.commit();
     } catch (e) {
       if (kDebugMode) print(e);
     } finally {
@@ -441,7 +457,16 @@ class StateManagementProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> editCategoryName(String id, int color, BuildContext con) async {
+  void oldCateNameAssign(String oldName) {
+    categoryCon = TextEditingController(text: oldName);
+  }
+
+  Future<void> editCategoryName(
+    String oldNm,
+    String id,
+    int c,
+    BuildContext cn,
+  ) async {
     try {
       final name = categoryCon.text.trim();
       if (name.isNotEmpty &&
@@ -456,16 +481,28 @@ class StateManagementProvider extends ChangeNotifier {
             .doc(auth.currentUser!.uid)
             .collection('Categories')
             .doc(id)
-            .update({"Category Name": name, "color": color});
+            .update({"Category Name": name, "color": c})
+            .timeout(Duration(seconds: 10));
       }
+      final batch = firestore.batch();
+      final query = await firestore
+          .collection('Users')
+          .doc(auth.currentUser!.uid)
+          .collection('Tasks')
+          .where('Category Name', isEqualTo: oldNm)
+          .get();
+      for (var doc in query.docs) {
+        batch.update(doc.reference, {'Category Name': name});
+      }
+      batch.commit();
     } catch (e) {
       if (kDebugMode) print(e);
     } finally {
       isSettingTask = false;
       categoryCon.clear();
       notifyListeners();
-      if (con.mounted) {
-        Navigator.pop(con);
+      if (cn.mounted) {
+        Navigator.pop(cn);
       }
     }
   }
@@ -486,12 +523,37 @@ class StateManagementProvider extends ChangeNotifier {
           .doc(id)
           .update({"Task Status": moveTo, "Category Name": cate})
           .timeout(Duration(seconds: 10));
-      isSettingTask = false;
     } catch (e) {
-      isSettingTask = false;
       if (kDebugMode) print(e);
+    } finally {
+      isSettingTask = false;
+      notifyListeners();
     }
-    notifyListeners();
+  }
+
+  Future<void> changeTaskCategory(
+    BuildContext cn,
+    String taskId,
+    String cate,
+  ) async {
+    try {
+      inSheetLoading = true;
+      notifyListeners();
+      await firestore
+          .collection('Users')
+          .doc(auth.currentUser!.uid)
+          .collection('Tasks')
+          .doc(taskId)
+          .update({'Category Name': cate});
+    } catch (e) {
+      if (kDebugMode) print(e);
+    } finally {
+      inSheetLoading = false;
+      notifyListeners();
+      if (cn.mounted) {
+        Navigator.of(cn).pop();
+      }
+    }
   }
 
   // Making the function that will calculate the amount of tasks
@@ -512,6 +574,7 @@ class StateManagementProvider extends ChangeNotifier {
         .get();
     pendingTasks = snapshotsPending.size;
     completedTasks = snapshotsCompleted.size;
+    await puttingLength();
     notifyListeners();
   }
 

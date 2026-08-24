@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/screens/after_account_screens/task_details_page.dart';
-import 'package:to_do_app/utils/global_items.dart';
-import 'package:to_do_app/utils/navigator.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/reusables.dart/bottom_sheets.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class Tasks extends StatelessWidget {
@@ -19,7 +19,7 @@ class Tasks extends StatelessWidget {
     final c = Theme.of(context).colorScheme;
     return Expanded(
       child: Card(
-        shape: mainRadius,
+        shape: RoundedRectangleBorder(borderRadius: .circular(15)),
         clipBehavior: .antiAlias,
         color: const Color(0x00000000),
         shadowColor: const Color(0x00000000),
@@ -45,6 +45,7 @@ class Tasks extends StatelessWidget {
                 final String title = ind['Task Title'];
                 final String date = ind['Dated on'];
                 final hasColor = ind.data().containsKey('color');
+                final color = hasColor ? Color(ind['color']) : c.primary;
                 final String category = ind['Category Name'];
                 final String desc = ind['Task Description'];
                 final String comDate = ind['Completion Date'];
@@ -63,7 +64,7 @@ class Tasks extends StatelessWidget {
                     title: title,
                     desc: desc,
                     date: date,
-                    color: hasColor ? c.error : c.primary,
+                    color: color,
                     status: ind['Task Status'],
                     category: category,
                     comDate: comDate,
@@ -255,7 +256,13 @@ class IconChanging extends StatelessWidget {
                 await p.taskMovingBetweenLists(id, moveTo, cate);
                 await p.pendingCompletedLengthGetting();
               }
-              if (value == 'change') {}
+              if (value == 'change') {
+                // ignore: use_build_context_synchronously
+                context.read<StateManagementProvider>().resetCategoryInd();
+                context.read<StateManagementProvider>().newCateName('Not Set');
+                // ignore: use_build_context_synchronously
+                sheet(context, ChangeCategorySheet(taskId: id, oldCate: cate));
+              }
             },
             elevation: 5,
             shape: RoundedRectangleBorder(borderRadius: .circular(20)),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
+import 'package:to_do_app/utils/reusables.dart/bottom_sheets.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class EmptyCategoryBox extends StatelessWidget {
@@ -36,15 +39,26 @@ class EmptyCategoryBox extends StatelessWidget {
             style: Style.gry10,
           ),
           const SizedBox(height: 10),
-          ElevatedButton(            
+          ElevatedButton(
             style: ElevatedButton.styleFrom(
               padding: const .symmetric(vertical: 5),
               backgroundColor: c.primary,
               fixedSize: Size(200, 50),
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: .circular(15))
+              shape: RoundedRectangleBorder(borderRadius: .circular(15)),
             ),
-            onPressed: () {},
+            onPressed: () {
+              final p = context.read<StateManagementProvider>();
+              final contro = p.categoryCon;
+              sheet(
+                context,
+                CategoryRelatedSheet(
+                  title: 'New Category',
+                  controller: contro,
+                  deletable: false,
+                ),
+              );
+            },
             child: Row(
               mainAxisAlignment: .center,
               children: [
@@ -54,7 +68,7 @@ class EmptyCategoryBox extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 10)
+          const SizedBox(height: 10),
         ],
       ),
     );

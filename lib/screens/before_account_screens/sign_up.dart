@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/utils/global_items.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/utils/reusables.dart/before_acc_topbar.dart';
 import 'package:to_do_app/utils/reusables.dart/field_borders.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class SignUpPage extends StatefulWidget {

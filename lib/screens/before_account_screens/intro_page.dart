@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:to_do_app/screens/before_account_screens/login.dart';
 import 'package:to_do_app/screens/before_account_screens/sign_up.dart';
-import 'package:to_do_app/utils/navigator.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 
 class StartUpPage extends StatelessWidget {

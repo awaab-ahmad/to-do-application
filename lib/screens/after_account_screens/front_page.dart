@@ -1,15 +1,11 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_app/screens/after_account_screens/creating_task_page.dart';
 import 'package:to_do_app/screens/after_account_screens/manage_account.dart';
-import 'package:to_do_app/utils/alert_dialog.dart';
-import 'package:to_do_app/utils/bottom_sheets.dart';
-import 'package:to_do_app/utils/global_items.dart';
-import 'package:to_do_app/utils/navigator.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/screens/after_account_screens/model_class_status.dart';
+import 'package:to_do_app/utils/reusables.dart/bottom_sheets.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/reusables.dart/no_category_box.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 import 'package:to_do_app/screens/after_account_screens/model_class_category.dart';
@@ -142,82 +138,8 @@ class _MainCategories extends StatelessWidget {
   }
 }
 
-// class _AddCategoryButton extends StatelessWidget {
-//   static TextEditingController categoryController = TextEditingController();
-
-//   const _AddCategoryButton();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final sz = MediaQuery.sizeOf(context);
-//     return ElevatedButton(
-//       onPressed: () async {
-//         showModalBottomSheet(
-//           isScrollControlled: true,
-//           useSafeArea: true,
-//           backgroundColor: const Color(0x00000000),
-//           context: context,
-//           builder: (context) {
-//             return Padding(
-//               padding: EdgeInsets.only(
-//                 bottom: MediaQuery.of(context).viewInsets.bottom,
-//               ),
-//               child: categoryCreatingBottomSheet(
-//                 sz.width,
-//                 sz.height,
-//                 context,
-//                 categoryController,
-//                 () => context.read<StateManagementProvider>().categoryCreation(
-//                   categoryController,
-//                 ),
-//               ),
-//             );
-//           },
-//         );
-//       },
-//       style: ElevatedButton.styleFrom(
-//         alignment: Alignment.centerLeft,
-//         overlayColor: const Color(0xFF000000),
-//         backgroundColor: const Color(0xFF86B2C5),
-//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-//         side: BorderSide(width: 1.5, color: const Color(0xFF000000)),
-//         padding: const EdgeInsets.symmetric(vertical: 08, horizontal: 15),
-//       ),
-//       child: Row(
-//         mainAxisAlignment: .start,
-//         children: [
-//           SizedBox(
-//             width: sz.width * 0.65,
-//             child: FittedBox(
-//               child: const Text(
-//                 'Create your own category',
-//                 style: Style.black14,
-//               ),
-//             ),
-//           ),
-//           const Expanded(child: SizedBox()),
-//           Image.asset('images/list.png', height: sz.height * 0.04),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
 class _MyCategories extends StatelessWidget {
   const _MyCategories();
-
-  static ButtonStyle stl() {
-    return ElevatedButton.styleFrom(
-      elevation: 0,
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      backgroundColor: const Color(0xFFFFFFFF),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        side: BorderSide(color: const Color(0xFFD9D6C9), width: 1.6),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -278,59 +200,11 @@ class _MyCategories extends StatelessWidget {
                     final cateName = ind['Category Name'];
                     final hasColor = ind.data().containsKey('color');
                     final color = hasColor ? Color(ind['color']) : c.primary;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 5),
-                      child: ElevatedButton(
-                        onLongPress: () {
-                          if (kDebugMode) print(data[index].id);
-                          final p = context.read<StateManagementProvider>();
-                          final contro = p.categoryCon;
-                          sheet(
-                            context,
-                            CategoryRelatedSheet(
-                              id: data[index].id,
-                              title: 'Edit category',
-                              controller: contro,
-                              deletable: true,
-                            ),
-                          );
-                        },
-                        onPressed: () {
-                          if (kDebugMode) {
-                            print(
-                              'The Name of this Page is: ${data[index]['Category Name']}',
-                            );
-                            Navigator.of(context).push(
-                              navigate(
-                                ModelCategoryClass(
-                                  appBarTitle: data[index]['Category Name'],
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        style: stl(),
-                        child: Row(
-                          children: [
-                            Container(
-                              height: 8,
-                              width: 8,
-                              decoration: BoxDecoration(
-                                shape: .circle,
-                                color: color,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Text(cateName, style: Style.black15),
-                            const Expanded(child: SizedBox()),
-                            Icon(
-                              Icons.keyboard_arrow_right_rounded,
-                              size: 25,
-                              color: c.onSurface,
-                            ),
-                          ],
-                        ),
-                      ),
+                    return _CategoryBtn(
+                      data: data,
+                      index: index,
+                      color: color,
+                      cateName: cateName,
                     );
                   },
                 ),
@@ -339,6 +213,101 @@ class _MyCategories extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _CategoryBtn extends StatelessWidget {
+  final dynamic data;
+  final int index;
+  final Color color;
+  final String cateName;
+  const _CategoryBtn({
+    required this.data,
+    required this.index,
+    required this.color,
+    required this.cateName,
+  });
+
+  static ButtonStyle stl() {
+    return ElevatedButton.styleFrom(
+      elevation: 0,
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      backgroundColor: const Color(0xFFFFFFFF),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: BorderSide(color: const Color(0xFFD9D6C9), width: 1.6),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).colorScheme;
+    final p = context.read<StateManagementProvider>();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: ElevatedButton(
+        onLongPress: () {
+          final oldName = data[index]['Category Name'];
+          p.oldCateNameAssign(oldName);
+          sheet(
+            context,
+            CategoryRelatedSheet(
+              oldName: oldName,
+              id: data[index].id,
+              title: 'Edit category',
+              controller: p.categoryCon,
+              deletable: true,
+            ),
+          );
+        },
+        onPressed: () {
+          Navigator.of(context).push(
+            navigate(
+              ModelCategoryClass(appBarTitle: data[index]['Category Name']),
+            ),
+          );
+        },
+        style: stl(),
+        child: Row(
+          children: [
+            Container(
+              height: 8,
+              width: 8,
+              decoration: BoxDecoration(shape: .circle, color: color),
+            ),
+            const SizedBox(width: 10),
+            Text(cateName, style: Style.black15),
+            const Expanded(child: SizedBox()),
+            StreamBuilder(
+              stream: p.firestore
+                  .collection('Users')
+                  .doc(p.auth.currentUser!.uid)
+                  .collection('Tasks')
+                  .where('Category Name', isEqualTo: cateName)
+                  .snapshots(),
+              builder: (context, snapShots) {
+                if (!snapShots.hasData) return SizedBox();
+                final length = snapShots.data!.size;
+                return SizedBox(
+                  width: 70,
+                  child: Text(
+                    length > 1 ? '$length Tasks' : '$length Task',
+                    style: Style.gry12,
+                  ),
+                );
+              },
+            ),
+            Icon(
+              Icons.keyboard_arrow_right_rounded,
+              size: 25,
+              color: c.onSurface,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -389,7 +358,7 @@ class _BottomBar extends StatelessWidget {
         mainAxisAlignment: .spaceEvenly,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: null,
             icon: Icon(Icons.home_sharp, size: 35, color: c.secondary),
           ),
           Transform.translate(

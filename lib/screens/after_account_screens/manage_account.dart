@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_app/utils/navigator.dart';
-import 'package:to_do_app/utils/provider_page.dart';
+import 'package:to_do_app/utils/state/provider_page.dart';
 import 'package:to_do_app/utils/reusables.dart/after_acc_topbar.dart';
+import 'package:to_do_app/utils/reusables.dart/indicator_navigator.dart';
 import 'package:to_do_app/utils/textStyles/styles.dart';
 import 'package:to_do_app/screens/before_account_screens/intro_page.dart';
 
@@ -43,22 +43,28 @@ class ManageAccountPage extends StatelessWidget {
                 children: [
                   const Text('Username', style: Style.gry14),
                   const SizedBox(height: 3),
-                  _Fields(
-                    nm: 'Awaab Ahmad',
-                    nmStyle: Style.blc14,
-                    ic: Icons.edit,
-                    icColor: c.onSecondaryFixed,
-                    containerBg: c.secondary,
+                  Selector<StateManagementProvider, String?>(
+                    selector: (_, pro) => pro.auth.currentUser!.displayName,
+                    builder: (_, user, _) => _Fields(
+                      nm: '$user',
+                      nmStyle: Style.blc14,
+                      ic: Icons.edit,
+                      icColor: c.onSecondaryFixed,
+                      containerBg: c.secondary,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text('Email', style: Style.gry14),
                   const SizedBox(height: 3),
-                  _Fields(
-                    nm: 'awaab8856@gmail.com',
-                    nmStyle: Style.mutedGry13,
-                    ic: Icons.lock,
-                    icColor: c.onSurfaceVariant,
-                    containerBg: c.primaryFixed,
+                  Selector<StateManagementProvider, String?>(
+                    selector: (_, pro) => pro.auth.currentUser!.email,
+                    builder: (_, email, _) => _Fields(
+                      nm: '$email',
+                      nmStyle: Style.mutedGry13,
+                      ic: Icons.lock,
+                      icColor: c.onSurfaceVariant,
+                      containerBg: c.primaryFixed,
+                    ),
                   ),
                 ],
               ),
