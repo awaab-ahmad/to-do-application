@@ -1,6 +1,6 @@
 # Task Me
 
-📝 A Simple Task application for managing daily tasks to demonstrate the working of latest Android Development Tools - (Flutter, Dart, Firebase, Local Storage and more). Made by awaab_ahmad
+📝 A Simple Task application for managing daily tasks to demonstrate the working of latest Android Development Tools - (Flutter, Dart, Firebase, Local Storage and more). Made by awaab_ahmad 
 
 ## Screenshots:
 <img width="1280" height="769" alt="iPad Pro 12 9_ - 2" src="https://github.com/user-attachments/assets/f298d9f3-4c8f-4504-8cab-7d05020cfd18" />
